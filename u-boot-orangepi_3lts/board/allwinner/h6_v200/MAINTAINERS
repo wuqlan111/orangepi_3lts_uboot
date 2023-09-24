@@ -1,0 +1,6 @@
+ALLWINNER_H6_V200 BOARD
+M:	wuqlan
+S:	Maintained
+F:	board/allwinner/h6_v200
+F:	include/configs/allwinner_h6_devboard.h
+F:	configs/allwinner_h6_v200_defconfig

@@ -1,0 +1,167 @@
+
+
+#include <dt-bindings/gpio/allwinner-h6-gpio.h>
+
+
+/ {
+	soc {
+		pinctrl1: pinctrl1@0300b000 {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0  0x0300b000   0x400>;
+			// interrupt-parent = <&exti>;
+			pins-are-numbered;
+
+			gpioc: gpio@0300b048 {
+				compatible = "allwinner, H6-v200-gpio";
+				reg = <0x48 0x24>;
+				ngpios = <ALLWINNER_H6_GPIOC_NUMBER>;
+				gpio-controller;
+				// gpio-ranges = <&pinctrl 0 0 32>;
+				#gpio-cells = <2>;
+			};
+
+			gpiod: gpio@0300b06c {
+				compatible = "allwinner, H6-v200-gpio";
+				reg = <0x6c 0x24>;
+				ngpios = <ALLWINNER_H6_GPIOD_NUMBER>;
+				gpio-controller;
+				// gpio-ranges = <&pinctrl 0 0 32>;
+				#gpio-cells = <2>;
+			};
+
+			gpiof: gpio@0300b0b4 {
+				compatible = "allwinner, H6-v200-gpio";
+				reg = <0xb4   0x24>,  <0x2a0   0x1c>;
+				ngpios = <ALLWINNER_H6_GPIOF_NUMBER>;
+				gpio-controller;
+				// gpio-ranges = <&pinctrl 0 0 32>;
+				#gpio-cells = <2>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+			};
+
+			gpiog: gpio@0300b0d8 {
+				compatible = "allwinner, H6-v200-gpio";
+				reg = <0xd8 0x24>,  <0x2c0   0x1c>;
+				ngpios = <ALLWINNER_H6_GPIOG_NUMBER>;
+				gpio-controller;
+				// gpio-ranges = <&pinctrl 0 0 32>;
+				#gpio-cells = <2>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+			};
+
+			gpioh: gpio@0300b0fc {
+				compatible = "allwinner, H6-v200-gpio";
+				reg = <0xfc 0x24>,  <0x2e0   0x1c>;
+				ngpios = <ALLWINNER_H6_GPIOH_NUMBER>;
+				gpio-controller;
+				// gpio-ranges = <&pinctrl 0 0 32>;
+				#gpio-cells = <2>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+			};
+
+			usart1_pins_a: usart1-0 {
+				pins1 {
+					pinmux = <STM32_PINMUX('A', 9, AF7)>; /* USART1_TX */
+					bias-disable;
+					drive-push-pull;
+					slew-rate = <0>;
+				};
+				pins2 {
+					pinmux = <STM32_PINMUX('A', 10, AF7)>; /* USART1_RX */
+					bias-disable;
+				};
+			};
+
+			usart3_pins_a: usart3-0 {
+				pins1 {
+					pinmux = <STM32_PINMUX('B', 10, AF7)>; /* USART3_TX */
+					bias-disable;
+					drive-push-pull;
+					slew-rate = <0>;
+				};
+				pins2 {
+					pinmux = <STM32_PINMUX('B', 11, AF7)>; /* USART3_RX */
+					bias-disable;
+				};
+			};
+        };
+
+		pinctrl2: pinctrl2@07022000 {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0  0x07022000   0x400>;
+			// interrupt-parent = <&exti>;
+			pins-are-numbered;
+
+			gpiol: gpio@07022000 {
+				compatible = "allwinner, H6-v200-gpio";
+				reg = <0x 0x24>,  <0x200   0x1c>;
+				ngpios = <ALLWINNER_H6_GPIOL_NUMBER>;
+				gpio-controller;
+				// gpio-ranges = <&pinctrl 0 0 32>;
+				#gpio-cells = <2>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+			};
+
+			gpiom: gpio@07022024 {
+				compatible = "allwinner, H6-v200-gpio";
+				reg = <0x24 0x24>,  <0x220   0x1c>;
+				ngpios = <ALLWINNER_H6_GPIOM_NUMBER>;
+				gpio-controller;
+				// gpio-ranges = <&pinctrl 0 0 32>;
+				#gpio-cells = <2>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+			};
+
+			usart1_pins_a: usart1-0 {
+				pins1 {
+					pinmux = <STM32_PINMUX('A', 9, AF7)>; /* USART1_TX */
+					bias-disable;
+					drive-push-pull;
+					slew-rate = <0>;
+				};
+				pins2 {
+					pinmux = <STM32_PINMUX('A', 10, AF7)>; /* USART1_RX */
+					bias-disable;
+				};
+			};
+
+			usart3_pins_a: usart3-0 {
+				pins1 {
+					pinmux = <STM32_PINMUX('B', 10, AF7)>; /* USART3_TX */
+					bias-disable;
+					drive-push-pull;
+					slew-rate = <0>;
+				};
+				pins2 {
+					pinmux = <STM32_PINMUX('B', 11, AF7)>; /* USART3_RX */
+					bias-disable;
+				};
+			};
+        };
+    };
+
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

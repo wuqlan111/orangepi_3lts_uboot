@@ -1,0 +1,21 @@
+
+/dts-v1/;
+
+#include "allwinner-h6.dtsi"
+
+/ {
+	model = "Allwinner H6 v200 family Soc";
+	compatible = "allwinner,H6-v200";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x00000000 0x40000000 0 0xc0000000>;
+	};
+};
+
+
+

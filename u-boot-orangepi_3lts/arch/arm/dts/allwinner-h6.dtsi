@@ -1,0 +1,318 @@
+// SPDX-License-Identifier: GPL-3.0
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/clock/allwinner-h6-clock.h>
+#include <dt-bindings/gpio/allwinner-h6-gpio.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	clocks {
+
+		/* 32 KHz extern crystal */
+		externclk: clock-oscillator {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <32768>;
+			clock-output-names = "oscillator";
+		};
+
+		/* 16 MHz RC clk */
+		rcclk: clock-rc {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <16000000>;
+			clock-output-names = "rc16M clk";
+		};
+
+		/* 24 MHz reference crystal */
+		dxcoclk: clock-dxco {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <24000000>;
+			clock-output-names = "dxco";
+		};
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		enable-method = "allwinner,H6-v200-smp";
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0>;
+			clock-frequency = <4000000>;
+			// clocks = <&clk IMX8MQ_CLK_ARM>;
+			// enable-method = "psci";
+			i-cache-size = <0x8000>;
+			// i-cache-line-size = <64>;
+			// i-cache-sets = <256>;
+			d-cache-size = <0x8000>;
+			// d-cache-line-size = <64>;
+			// d-cache-sets = <128>;
+			next-level-cache = <&a53_l2cache>;
+		};
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <1>;
+			clock-frequency = <4000000>;
+			// clocks = <&clk IMX8MQ_CLK_ARM>;
+			// enable-method = "psci";
+			i-cache-size = <0x8000>;
+			// i-cache-line-size = <64>;
+			// i-cache-sets = <256>;
+			d-cache-size = <0x8000>;
+			// d-cache-line-size = <64>;
+			// d-cache-sets = <128>;
+			next-level-cache = <&a53_l2cache>;
+		};
+		cpu@2 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <2>;
+			clock-frequency = <4000000>;
+			// clocks = <&clk IMX8MQ_CLK_ARM>;
+			// enable-method = "psci";
+			i-cache-size = <0x8000>;
+			// i-cache-line-size = <64>;
+			// i-cache-sets = <256>;
+			d-cache-size = <0x8000>;
+			// d-cache-line-size = <64>;
+			// d-cache-sets = <128>;
+			next-level-cache = <&a53_l2cache>;
+		};
+		cpu@3 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <3>;
+			clock-frequency = <4000000>;
+			// clocks = <&clk IMX8MQ_CLK_ARM>;
+			// enable-method = "psci";
+			i-cache-size = <0x8000>;
+			// i-cache-line-size = <64>;
+			// i-cache-sets = <256>;
+			d-cache-size = <0x8000>;
+			// d-cache-line-size = <64>;
+			// d-cache-sets = <128>;
+			next-level-cache = <&a53_l2cache>;
+		};
+
+		a53_l2cache: l2-cache0 {
+			compatible = "cache";
+			cache-level = <2>;
+			cache-size = <0x80000>;
+			// cache-line-size = <64>;
+			// cache-sets = <1024>;
+		};
+	};
+
+	pmu {
+		compatible = "arm,cortex-a53-pmu";
+		interrupts = <GIC_PPI 7 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-parent = <&gic>;
+	};
+
+	soc {
+		compatible = "allwinner,H6-v200", "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		bootrom {
+			compatible = "allwinner,bootrom";
+			reg = <0   0x200000>;
+		};
+
+		coreclk: ccu@40023800 {
+			// #reset-cells = <1>;
+			#clock-cells = <1>;
+			compatible = "allwinner,h6-v200-ccu", "allwinner,h6-ccu";
+			reg = <0x03001000  0x1000>;
+			clocks = <&externclk>, <&rcclk>,  <&dxcoclk>;
+		};
+
+
+		nandflashc: nandflash@04011000 {
+			compatible = "allwinner,H6-v200-nand-flash-controller";
+			reg = <0x04011000 0x300>;
+			interrupts = <GIC_SPI 66 IRQ_TYPE_LEVEL_HIGH>;
+			clocks =	<&coreclk   ALLWINNER_CLK_NAND0>,
+						<&coreclk   ALLWINNER_CLK_NAND1>;
+			bus-width = <4>;
+			status = "disabled";
+		};
+
+		smhc0: sd_ddr@04020000 {
+			compatible = "allwinner,H6-v200-sd-ddr-controller";
+			reg = <0x04020000 0x300>;
+			interrupts = <GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>;
+			clocks =  <&coreclk   ALLWINNER_CLK_SMHC0>;
+			status = "disabled";
+		};
+
+		smhc1: sd_ddr@04021000 {
+			compatible = "allwinner,H6-v200-sd-ddr-controller";
+			reg = <0x04021000 0x300>;
+			interrupts = <GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>;
+			clocks =	<&coreclk   ALLWINNER_CLK_SMHC1>;
+			status = "disabled";
+		};
+
+		smhc2: sd_ddr@04022000 {
+			compatible = "allwinner,H6-v200-sd-ddr-controller";
+			reg = <0x04022000 0x300>;
+			interrupts = <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>;
+			clocks =	<&coreclk   ALLWINNER_CLK_SMHC2>;
+			status = "disabled";
+		};
+
+		timer0:  timer@0x03009014{
+			compatible = "allwinner, H6-v200-timer";
+			reg = <0x03009014 0xc>;
+			interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>;
+			clocks =	<&externclk>,  <&dxcoclk>;
+			status = "disabled";
+		};
+
+		timer1:  timer@0x03009020{
+			compatible = "allwinner, H6-v200-timer";
+			reg = <0x03009020 0xc>;
+			interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
+			clocks  =  <&externclk>,  <&dxcoclk>;
+			status  =  "disabled";
+		};
+
+		watchdog: watchdog@20300 {
+			compatible = "allwinner, H6-v200-watchdog";
+			reg = <0x030090a0  0x14>;
+			interrupts = <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>;
+			clocks  =	<&dxcoclk>;
+			status  =   "disabled";
+		};
+
+		counter64: counter@20300 {
+			compatible = "allwinner, H6-v200-counter";
+			reg = <0x03009100  0xc>;
+			// clocks = <&coreclk 2>, <&refclk>;
+		};
+
+
+		gic: interrupt-controller@d000 {
+			compatible = "arm,gic-v3";
+			// reg = <0x38800000 0x10000>,	/* GIC Dist */
+			//       <0x38880000 0xc0000>,	/* GICR */
+			//       <0x31000000 0x2000>,	/* GICC */
+			//       <0x31010000 0x2000>,	/* GICV */
+			//       <0x31020000 0x2000>;	/* GICH */
+
+			#interrupt-cells = <3>;
+			interrupt-controller;
+			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-parent = <&gic>;
+		};
+
+		uart0: serial@05000000 {
+			compatible = "allwinner, H6-v200-uart";
+			reg = <0x05000000   0xb0>;
+			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&coreclk  ALLWINNER_CLK_UARTX>;
+			status = "disabled";
+		};
+
+		uart1: serial@05000400 {
+			compatible = "allwinner, H6-v200-uart";
+			reg = <0x05000400   0xb0>;
+			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&coreclk  ALLWINNER_CLK_UARTX>;
+			status = "disabled";
+		};
+
+		uart2: serial@05000800 {
+			compatible = "allwinner, H6-v200-uart";
+			reg = <0x05000800   0xb0>;
+			interrupts = <GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&coreclk   ALLWINNER_CLK_UARTX>;
+			status = "disabled";
+		};
+
+		uart3: serial@05000c00 {
+			compatible = "allwinner, H6-v200-uart";
+			reg = <0x05000c00   0xb0>;
+			interrupts = <GIC_SPI 35 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&coreclk   ALLWINNER_CLK_UARTX>;
+			status = "disabled";
+		};
+
+		r_uart0: serial@07080000 {
+			compatible = "allwinner, H6-v200-uart";
+			reg = <0x07080000   0xb0>;
+			interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&coreclk   ALLWINNER_CLK_UARTX>;
+			status = "disabled";
+		};
+
+
+		usb0: usb@05311000 {
+			compatible = "allwinner, H6-v200-usb";
+			reg = <0x05311000 0x900>;
+			// interrupts = <GIC_SPI 18 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&coreclk   ALLWINNER_CLK_USB0>;
+			status = "disabled";
+		};
+
+		
+		rtc: rtc@a3800 {
+			compatible = "allwinner, H6-v200-rtc";
+			reg = <0x07000000  0x220>;
+			reg-names = "rtc", "rtc-soc";
+			interrupts = <GIC_SPI 21 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&externclk>;
+		};
+
+
+		spi0: spi@10600 {
+			compatible = "allwinner,H6-v200-spi";
+			reg = <0x05010000  0x308>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			cell-index = <0>;
+			interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&dxcoclk>;
+			status = "disabled";
+		};
+
+		spi1: spi@10680 {
+			compatible = "allwinner,H6-v200-spi";
+			reg = <0x05011000  0x308>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			cell-index = <1>;
+			interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&dxcoclk>;
+			status = "disabled";
+		};
+
+		iommu: iommu@sds {
+			compatible = "allwinner,H6-v200-iommu";
+			reg = <0x030f00000  0x360>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			cell-index = <1>;
+			interrupts = <GIC_SPI 89 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+		};
+
+
+
+
+
+	};
+
+	
+};
+

@@ -1,0 +1,12 @@
+if H6_V200
+
+config SYS_VENDOR
+	default "allwinner"
+
+config SYS_BOARD
+	default "h6_v200"
+
+config SYS_CONFIG_NAME
+	default "allwinner_h6_devboard"
+
+endif

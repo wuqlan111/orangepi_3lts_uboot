@@ -1,0 +1,27 @@
+#ifndef __CONFIG_H
+#define __CONFIG_H
+
+/* nor flash */
+#if defined(CONFIG_MTD_NOR_FLASH)
+#define CFG_SYS_FLASH_BASE		0x00000000
+#define CFG_SYS_FLASH_SIZE		0x04000000	/* 64 MB */
+#define CFG_SYS_FLASH_BANKS_LIST	{ (CFG_SYS_FLASH_BASE) }
+#define CFG_SYS_FLASH_BANKS_SIZES	{ (CFG_SYS_FLASH_SIZE) }
+#endif
+
+
+#define PHYS_SDRAM_1		0x80000000
+/* Top 48MB reserved for secure world use */
+#define DRAM_SEC_SIZE		0x03000000
+#define PHYS_SDRAM_1_SIZE	0x80000000 - DRAM_SEC_SIZE
+#define CFG_SYS_SDRAM_BASE	PHYS_SDRAM_1
+
+#define PHYS_SDRAM_2		0x8080000000
+#define PHYS_SDRAM_2_SIZE	0x180000000
+
+
+
+
+
+#endif
+

@@ -1,0 +1,51 @@
+
+#ifndef _ALLWINNER_SMHC_H
+#define _ALLWINNER_SMHC_H
+
+#include  <stdint.h>
+#include  <linux/bitops.h>
+
+
+#define  ALLWINNER_SMHC_CTRL_SOFT_RST             BIT(0)
+
+
+
+
+#define  ALLWINNER_SMHC_CMD_LOAD             BIT(31)
+#define  ALLWINNER_SMHC_CMD_VOL_SW           BIT(28)
+#define  ALLWINNER_SMHC_CMD_BOOT_ABT         BIT(27)
+#define  ALLWINNER_SMHC_CMD_EXPBOOT_ACK      BIT(26)
+#define  ALLWINNER_SMHC_CMD_BOOT_MODE        GENMASK(25,  24)
+#define  ALLWINNER_SMHC_CMD_CHANGE_CLK       BIT(21)
+#define  ALLWINNER_SMHC_CMD_INIT_SEQ         BIT(15)
+#define  ALLWINNER_SMHC_CMD_STOP_ABT         BIT(14)
+#define  ALLWINNER_SMHC_CMD_WAIT_TRANSFER    BIT(13)
+#define  ALLWINNER_SMHC_CMD_STOP_AUTO        BIT(12)
+#define  ALLWINNER_SMHC_CMD_TRANS_MODE       BIT(11)
+#define  ALLWINNER_SMHC_CMD_TRANS_DIR        BIT(10)
+#define  ALLWINNER_SMHC_CMD_DATA_TRANS       BIT(9)
+#define  ALLWINNER_SMHC_CMD_RSP_CRC          BIT(8)
+#define  ALLWINNER_SMHC_CMD_LONG_RSP         BIT(7)
+#define  ALLWINNER_SMHC_CMD_RSP_RCV          BIT(6)
+#define  ALLWINNER_SMHC_CMD_INDEX            GENMASK(5,  0)
+
+
+
+#define  ALLWINNER_SMHC_STATUS_DMA_REQ                 BIT(31)
+#define  ALLWINNER_SMHC_STATUS_FIFO_LEVEL              GENMASK(25,  17)
+#define  ALLWINNER_SMHC_STATUS_RSP_INDEX               GENMASK(16,  11)
+#define  ALLWINNER_SMHC_STATUS_FSM_BUSY                BIT(10)
+#define  ALLWINNER_SMHC_STATUS_CARD_BUSY               BIT(9)
+#define  ALLWINNER_SMHC_STATUS_CARD_PRESENT            BIT(8)
+#define  ALLWINNER_SMHC_STATUS_FSM_STA                 GENMASK(7,  4)
+#define  ALLWINNER_SMHC_STATUS_FIFO_FULL               BIT(3)
+#define  ALLWINNER_SMHC_STATUS_FIFO_EMPTY              BIT(2)
+#define  ALLWINNER_SMHC_STATUS_FIFO_TXLEVEL            BIT(1)
+#define  ALLWINNER_SMHC_STATUS_FIFO_RXLEVEL            BIT(0)
+
+
+
+
+#endif
+
+
