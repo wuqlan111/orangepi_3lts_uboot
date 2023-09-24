@@ -35,24 +35,24 @@
     ARRAY_V(ALLWINNER_CLK_SMHC2,        0x838),        \
     ARRAY_V(ALLWINNER_CLK_SPI0,         0x940),        \
     ARRAY_V(ALLWINNER_CLK_SPI1,         0x944),
-    // ARRAY_V(ALLWINNER_CLK_SMHC2,        0x838),        \
-    // ARRAY_V(ALLWINNER_CLK_SMHC2,        0x838),        \
-    // ARRAY_V(ALLWINNER_CLK_SMHC2,        0x838),        \
-    // ARRAY_V(ALLWINNER_CLK_SMHC2,        0x838),        \
-    // ARRAY_V(ALLWINNER_CLK_SMHC2,        0x838),        \
+    // ARRAY_V(ALLWINNER_CLK_SMHC2,        0x838),
+    // ARRAY_V(ALLWINNER_CLK_SMHC2,        0x838),
+    // ARRAY_V(ALLWINNER_CLK_SMHC2,        0x838),
+    // ARRAY_V(ALLWINNER_CLK_SMHC2,        0x838),
+    // ARRAY_V(ALLWINNER_CLK_SMHC2,        0x838),
 
 
-// #define  foreach_array_clk_pattern0    \
-//     ARRAY_V(ALLWINNER_PLL_CPUX,         ALLWINNER_CLK_REG_INVALID),       \
-//     ARRAY_V(ALLWINNER_PLL_DDR0,         0x110),       \
-//     ARRAY_V(ALLWINNER_PLL_PERI0,        ALLWINNER_CLK_REG_INVALID),       \
-//     ARRAY_V(ALLWINNER_PLL_PERI1,        0x128),       \
-//     ARRAY_V(ALLWINNER_PLL_GPU,          0x130),       \
-//     ARRAY_V(ALLWINNER_PLL_VIDEO0,       0x140),       \
-//     ARRAY_V(ALLWINNER_PLL_VIDEO1,       0x148),       \
-//     ARRAY_V(ALLWINNER_PLL_VE,           0x158),       \
-//     ARRAY_V(ALLWINNER_PLL_DE,           0x160),       \
-//     ARRAY_V(ALLWINNER_PLL_HSIC,         0x170),       \
+// #define  foreach_array_clk_pattern0   
+//     ARRAY_V(ALLWINNER_PLL_CPUX,         ALLWINNER_CLK_REG_INVALID),       
+//     ARRAY_V(ALLWINNER_PLL_DDR0,         0x110),       
+//     ARRAY_V(ALLWINNER_PLL_PERI0,        ALLWINNER_CLK_REG_INVALID),      
+//     ARRAY_V(ALLWINNER_PLL_PERI1,        0x128),       
+//     ARRAY_V(ALLWINNER_PLL_GPU,          0x130),       
+//     ARRAY_V(ALLWINNER_PLL_VIDEO0,       0x140),       
+//     ARRAY_V(ALLWINNER_PLL_VIDEO1,       0x148),       
+//     ARRAY_V(ALLWINNER_PLL_VE,           0x158),       
+//     ARRAY_V(ALLWINNER_PLL_DE,           0x160),       
+//     ARRAY_V(ALLWINNER_PLL_HSIC,         0x170),       
 //     ARRAY_V(ALLWINNER_PLL_AUDIO,        0x178),
 
 

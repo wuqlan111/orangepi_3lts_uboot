@@ -10,6 +10,8 @@
         "types.h": "c",
         "compiler.h": "c",
         "rst-allwinner-h6.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "common.h": "c",
+        "delay.h": "c"
     }
 }
