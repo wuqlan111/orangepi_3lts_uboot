@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "allwinner-h6-clock.h": "c",
+        "io.h": "c",
+        "clk-allwinner-h6.h": "c"
+    }
+}

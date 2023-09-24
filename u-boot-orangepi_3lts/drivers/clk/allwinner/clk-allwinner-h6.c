@@ -1,6 +1,4 @@
 
-
-
 #define  LOG_CATEGORY UCLASS_CLK
 
 #include  <common.h>
@@ -14,7 +12,6 @@
 #include  <asm/io.h>
 
 #include  "clk-allwinner-h6.h"
-
 
 static  uint32_t  allwinner_clk_regs_offset[] = {  foreach_array_clk_ctrl };
 static  uint32_t  allwinner_pll_m[] = { 1,  2,  4};
