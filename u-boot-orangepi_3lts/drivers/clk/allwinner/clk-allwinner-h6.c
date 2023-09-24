@@ -25,17 +25,21 @@ typedef  struct {
 static  uint32_t  allwinner_clk_regs_offset[] = {  foreach_array_clk_ctrl };
 static  uint32_t  allwinner_pll_m[] = { 1,  2,  4};
 
-static  void  _allwinner_h6_pll_enable(u32 *  regs)
+static  int32_t  _allwinner_h6_pll_enable(uint32_t clk_id, uint32_t base)
 {
+    uint32_t * regs =  (uint32_t *)(base + allwinner_clk_regs_offset[clk_id]);
     setbits_32(regs,  ALLWINNER_H6_PLLX_ENABLE | ALLWINNER_H6_PLLX_LOCK_ENABLE);
     while (!(readl(regs) & ALLWINNER_H6_PLLX_LOCK))  ;
     udelay(20);
+    return  0;
 }
 
 
-static  void  _allwinner_h6_pll_disable(u32 *  regs)
+static  int32_t  _allwinner_h6_pll_disable(uint32_t clk_id, uint32_t base)
 {
+    uint32_t * regs =  (uint32_t *)(base + allwinner_clk_regs_offset[clk_id]);
     clrbits_32(regs,  ALLWINNER_H6_PLLX_ENABLE | ALLWINNER_H6_PLLX_LOCK_ENABLE);
+    return  0;
 }
 
 
@@ -129,7 +133,7 @@ static  int32_t  _allwinner_h6_pll_set_rate(uint32_t clk_id,  ulong rate, uint32
 
     uint32_t * reg_addr =  (uint32_t *)(base + allwinner_clk_regs_offset[clk_id]);
 
-    uint32_t  clk_ctrl  =  readl((uint32_t *)reg_addr);
+    uint32_t  clk_ctrl  =  readl(reg_addr);
     uint32_t  clk_enable  =  clk_ctrl & ALLWINNER_H6_PLLX_ENABLE ? 1: 0;
     uint32_t  support_change_rate  =  (clk_id == ALLWINNER_PLL_CPUX) || 
                 ( clk_id ==  ALLWINNER_PLL_GPU ) ? 1:  0;
@@ -160,7 +164,7 @@ static  int32_t  _allwinner_h6_pll_set_rate(uint32_t clk_id,  ulong rate, uint32
 static  int32_t  _allwinner_h6_pll_get_rate(uint32_t clk_id,  uint32_t base,  ulong * rate)
 {
 
-    uint32_t  reg_addr =  base + allwinner_clk_regs_offset[clk_id];
+    uint32_t * reg_addr =  (uint32_t *)(base + allwinner_clk_regs_offset[clk_id]);
     uint32_t  pll_n, pll_m, tmp_m;
     pll_n  = pll_m  = tmp_m = 0;    
 
@@ -198,7 +202,7 @@ static int32_t _allweinner_clk_psi_get_rate(uint32_t base,  ulong * rate)
 {
     int32_t  ret = 0;
 
-    uint32_t  reg_addr  =  base + allwinner_clk_regs_offset[ALLWINNER_CLK_PSI_AHB1_AHB2];
+    uint32_t * reg_addr  =  (uint32_t *)(base + allwinner_clk_regs_offset[ALLWINNER_CLK_PSI_AHB1_AHB2]);
     uint32_t  clk_ctrl = readl(reg_addr);
     uint32_t  clk_src  =  (clk_ctrl & GENMASK(25, 24)) >> 24;
 
@@ -231,7 +235,7 @@ static int32_t _allweinner_clk_psi_get_rate(uint32_t base,  ulong * rate)
 static int32_t _allweinner_clk_psi_set_rate(uint32_t base,  ulong rate,  ulong * new_rate)
 {
     int32_t  ret  =  0;
-    uint32_t  reg_addr  =  base + allwinner_clk_regs_offset[ALLWINNER_CLK_PSI_AHB1_AHB2];
+    uint32_t * reg_addr  =  (uint32_t *)(base + allwinner_clk_regs_offset[ALLWINNER_CLK_PSI_AHB1_AHB2]);
     uint32_t  clk_ctrl = readl(reg_addr);
     uint32_t  clk_src  =  (clk_ctrl & GENMASK(25, 24)) >> 24;
     ulong  src_rate  = 0;
@@ -254,40 +258,50 @@ static int32_t _allweinner_clk_psi_set_rate(uint32_t base,  ulong rate,  ulong *
         return   -EINVAL;
     }
 
-    const  uint32_t  pll_m_count  =  ARRAY_SIZE(allwinner_pll_m);
-    const  ulong   tmp_rate_min   =  rate * allwinner_pll_m[0];
-    const  ulong   tmp_rate_max   =  rate * allwinner_pll_m[pll_m_count - 1];
-    const  ulong   pll_n_min  =  tmp_rate_min / ALLWINNER_PLLX_SRC_CLK;
-    const  ulong   pll_n_max  =  tmp_rate_max / ALLWINNER_PLLX_SRC_CLK;
+    const  ulong   clk_m_min  =  src_rate % rate ? (src_rate / rate) + 1: src_rate / rate;
+    const  ulong   clk_m_max  =  src_rate % (rate << 3) ? (src_rate / (rate << 3)) + 1: src_rate / (rate << 3);
 
+    uint32_t  clk_n, clk_m,  best_clk_n, best_clk_m;
+    clk_n  =  clk_m  =  best_clk_n  = best_clk_m  = 0; 
 
+    ulong  rate_delta  =  src_rate - rate;
 
+    for (clk_n =  0; clk_n < 4; clk_n++) {
+        uint32_t  find_best  =  0;
+        for (clk_m =  clk_m_min; (clk_m <= clk_m_max) && (clk_m <= 4); clk_m++) {
+            ulong  tmp_factor  =  clk_m * (1 << clk_n);
+            ulong  tmp_rate   =  src_rate / tmp_factor;
+            ulong  tmp_delta  =  tmp_rate - rate;
 
-    for (clk_m =  0; clk_m < 4; clk_m++)
-        for (clk_n =  0; clk_n < 4; clk_n++) {
-            double  tmp_factor  =  (clk_m + 1) * (1 << clk_n);
-            if (tmp_factor < divisor) {
+            if ( tmp_rate < rate ) {
                 continue;
             }
 
-            double  tmp_delta  =  tmp_factor - divisor;
-
-            if (tmp_delta  < delta) {
-                best_m  =  clk_m;
-                best_n  =  clk_n;
-                delta  =  tmp_delta;
+            if (tmp_delta  < rate_delta) {
+                best_clk_m  =  clk_m;
+                best_clk_n  =  clk_n;
+                rate_delta  =  tmp_delta;
+                *new_rate  =  tmp_rate;
             }
 
             if (tmp_delta == 0) {
+                find_best  =  1;
                 break;
             }
                 
         }
 
+        if (find_best) {
+            break;
+        }
 
-    * new_rate  =  src_rate  / ( (best_m + 1) * (1 << best_n) );
+    }
 
-    uint32_t  flag  =  ( best_n << 8 ) | best_m;
+    if (!best_clk_m) {
+        return  -1;
+    }
+
+    uint32_t  flag  =  ( best_clk_n << 8 ) | (best_clk_m  - 1);
     uint32_t  mask  =   GENMASK(9,  8) | GENMASK(1,  0);
 
     clk_ctrl  &=  ~mask;
@@ -305,7 +319,7 @@ static int32_t _allweinner_clk_ahbx_get_rate(uint32_t is_ahb3, uint32_t base, ul
 {
     int32_t  ret  =  0;
     uint32_t  reg_offset  =  is_ahb3 ? ALLWINNER_CLK_AHB3: ALLWINNER_CLK_PSI_AHB1_AHB2;
-    uint32_t  reg_addr   =  base + allwinner_clk_regs_offset[reg_offset];
+    uint32_t  * reg_addr   =  (uint32_t *)(base + allwinner_clk_regs_offset[reg_offset]);
 
     uint32_t  clk_ctrl  =  readl(reg_addr);
     uint32_t  clk_src  =  (clk_ctrl & GENMASK(25, 24)) >> 24;
@@ -346,7 +360,7 @@ static int32_t _allweinner_clk_ahbx_set_rate(ulong rate, uint32_t is_ahb3, uint3
 {
     int32_t  ret  =  0;
     uint32_t  reg_offset  =  is_ahb3 ? ALLWINNER_CLK_AHB3: ALLWINNER_CLK_PSI_AHB1_AHB2;
-    uint32_t  reg_addr   =  base + allwinner_clk_regs_offset[reg_offset];
+    uint32_t  * reg_addr   =  (uint32_t *)(base + allwinner_clk_regs_offset[reg_offset]);
 
     uint32_t  clk_ctrl  =  readl(reg_addr);
     uint32_t  clk_src  =  (clk_ctrl & GENMASK(25, 24)) >> 24;
@@ -378,35 +392,50 @@ static int32_t _allweinner_clk_ahbx_set_rate(ulong rate, uint32_t is_ahb3, uint3
         return   -EINVAL;
     }
 
-    double divisor  =  (double)src_rate / rate;
-    double  delta  =  64;
-    uint32_t  clk_n,  clk_m, best_m, best_n;
-    clk_n  = clk_m = best_m = best_n  =  0;
+    const  ulong   clk_m_min  =  src_rate % rate ? (src_rate / rate) + 1: src_rate / rate;
+    const  ulong   clk_m_max  =  src_rate % (rate << 3) ? (src_rate / (rate << 3)) + 1: src_rate / (rate << 3);
 
-    for (clk_m =  0; clk_m < 4; clk_m++) 
-        for (clk_n =  0; clk_n < 4; clk_n++) {
-            double  tmp_factor  =  (clk_m + 1) * (1 << clk_n);
-            if (tmp_factor < divisor) {
+    uint32_t  clk_n, clk_m,  best_clk_n, best_clk_m;
+    clk_n  =  clk_m  =  best_clk_n  = best_clk_m  = 0; 
+
+    ulong  rate_delta  =  src_rate - rate;
+
+    for (clk_n =  0; clk_n < 4; clk_n++) {
+        uint32_t  find_best  =  0;
+        for (clk_m =  clk_m_min; (clk_m <= clk_m_max) && (clk_m <= 4); clk_m++) {
+            ulong  tmp_factor  =  clk_m * (1 << clk_n);
+            ulong  tmp_rate   =  src_rate / tmp_factor;
+            ulong  tmp_delta  =  tmp_rate - rate;
+
+            if ( tmp_rate < rate ) {
                 continue;
             }
 
-            double  tmp_delta  =  tmp_factor - divisor;
-
-            if (tmp_delta  < delta) {
-                best_m  =  clk_m;
-                best_n  =  clk_n;
-                delta  =  tmp_delta;
+            if (tmp_delta  < rate_delta) {
+                best_clk_m  =  clk_m;
+                best_clk_n  =  clk_n;
+                rate_delta  =  tmp_delta;
+                *new_rate  =  tmp_rate;
             }
 
             if (tmp_delta == 0) {
+                find_best  =  1;
                 break;
             }
                 
         }
 
-    
-    *new_rate  =  src_rate  / ( (best_m + 1) * (1 << best_n) );
-    uint32_t  flag  =  ( best_n << 8 ) | best_m;
+        if (find_best) {
+            break;
+        }
+
+    }
+
+    if (!best_clk_m) {
+        return  -1;
+    }
+
+    uint32_t  flag  =  ( best_clk_n << 8 ) | (best_clk_m - 1);
     uint32_t  mask  =   GENMASK(9,  8) | GENMASK(1,  0);
 
     clk_ctrl  &=  ~mask;
@@ -484,14 +513,28 @@ static ulong allwinner_h6_get_rate(struct clk *clk)
 
 int32_t allwinner_h6_enable(struct clk *clk)
 {
+    int32_t  ret  =  0;
+    allwinner_h6_clk_plat_t  * plat  =  dev_get_plat(clk->dev);
+    uint32_t  clk_id   =  clk->id;
 
-    return  0;
+    if (clk_id <= ALLWINNER_PLL_MAX) {
+        ret  =   _allwinner_h6_pll_enable(clk_id, plat->base);
+    }
+
+    return   ret;
 }
 
 int32_t allwinner_h6_disable(struct clk *clk)
 {
+    int32_t  ret  =  0;
+    allwinner_h6_clk_plat_t  * plat  =  dev_get_plat(clk->dev);
+    uint32_t  clk_id   =  clk->id;
 
-    return  0;
+    if (clk_id <= ALLWINNER_PLL_MAX) {
+        ret  =  _allwinner_h6_pll_disable(clk_id, plat->base);
+    }
+
+    return  ret;
 }
 
 static const struct clk_ops allwinner_h6_ops = {
