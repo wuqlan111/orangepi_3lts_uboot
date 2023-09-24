@@ -1,0 +1,8 @@
+config CLK_ALLWINNER_H6
+	bool "Enable clock driver support for STM32F family"
+	depends on CLK && H6_V200
+	default y
+	help
+	  This clock driver adds support for CCU clock management
+	  for ALLWINNER_H6 SoCs.
+

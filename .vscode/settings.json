@@ -2,6 +2,14 @@
     "files.associations": {
         "allwinner-h6-clock.h": "c",
         "io.h": "c",
-        "clk-allwinner-h6.h": "c"
+        "clk-allwinner-h6.h": "c",
+        "clk-uclass.h": "c",
+        "dm.h": "c",
+        "bitops.h": "c",
+        "bitsperlong.h": "c",
+        "types.h": "c",
+        "compiler.h": "c",
+        "rst-allwinner-h6.h": "c",
+        "stdint.h": "c"
     }
 }

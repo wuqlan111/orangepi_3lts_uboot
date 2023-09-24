@@ -59,6 +59,10 @@
 #define  ALLWINNER_CLK_CSI_MISC                  46
 #define  ALLWINNER_CLK_CSI_TOP                   47
 #define  ALLWINNER_CLK_CSI_MASTER                48
+#define  ALLWINNER_CLK_UART0                     49
+#define  ALLWINNER_CLK_UART1                     50
+#define  ALLWINNER_CLK_UART2                     51
+#define  ALLWINNER_CLK_UART3                     52
 
 #define  ALLWINNER_PLL_MAX         ALLWINNER_PLL_AUDIO
 #define  ALLWINNER_CLK_UARTX       ALLWINNER_CLK_APB2
