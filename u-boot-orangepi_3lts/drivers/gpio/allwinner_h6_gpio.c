@@ -114,7 +114,7 @@ static int allwinner_h6_gpio_set_value(struct udevice *dev, unsigned pin, int va
 }
 
 
-static int allwinner_h6_gpio_get_function(struct udevice *dev, unsigned offset)
+static int allwinner_h6_gpio_get_function(struct udevice *dev, uint32_t  pin)
 {
 	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_gpio_config_t *  config_regs  =  
@@ -126,7 +126,7 @@ static int allwinner_h6_gpio_get_function(struct udevice *dev, unsigned offset)
 
 	uint32_t  offset  =  pin  >> 3;
 	uint32_t  shift   =  (pin % 8) << 2;
-	uint32_t  pin_func  =  (readl(config_regs->cfgx[offset]) >> shift) & 0x7;
+	uint32_t  pin_func  =  (readl(&config_regs->cfgx[offset]) >> shift) & 0x7;
 
 	if (pin_func ==  ALLWINNER_H6_GPIO_OUTPUT) {
 		return  GPIOF_OUTPUT;

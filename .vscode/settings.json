@@ -12,6 +12,7 @@
         "rst-allwinner-h6.h": "c",
         "stdint.h": "c",
         "common.h": "c",
-        "delay.h": "c"
+        "delay.h": "c",
+        "allwinner_h6_gpio.h": "c"
     }
 }
