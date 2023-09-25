@@ -13,11 +13,12 @@
 			pins-are-numbered;
 
 			gpioc: gpio@0300b048 {
-				compatible = "allwinner, H6-v200-gpio";
+				compatible = "allwinner,H6-v200-gpio";
 				reg = <0x48 0x24>;
 				ngpios = <ALLWINNER_H6_GPIOC_NUMBER>;
 				gpio-controller;
 				// gpio-ranges = <&pinctrl 0 0 32>;
+				allwinner,gpio-bank-width =  <17>;
 				#gpio-cells = <2>;
 			};
 
@@ -27,6 +28,7 @@
 				ngpios = <ALLWINNER_H6_GPIOD_NUMBER>;
 				gpio-controller;
 				// gpio-ranges = <&pinctrl 0 0 32>;
+				allwinner,gpio-bank-width =  <27>;
 				#gpio-cells = <2>;
 			};
 
@@ -36,6 +38,7 @@
 				ngpios = <ALLWINNER_H6_GPIOF_NUMBER>;
 				gpio-controller;
 				// gpio-ranges = <&pinctrl 0 0 32>;
+				allwinner,gpio-bank-width =  <7>;
 				#gpio-cells = <2>;
 				interrupt-controller;
 				#interrupt-cells = <2>;
@@ -47,6 +50,7 @@
 				ngpios = <ALLWINNER_H6_GPIOG_NUMBER>;
 				gpio-controller;
 				// gpio-ranges = <&pinctrl 0 0 32>;
+				allwinner,gpio-bank-width =  <15>;
 				#gpio-cells = <2>;
 				interrupt-controller;
 				#interrupt-cells = <2>;
@@ -58,6 +62,7 @@
 				ngpios = <ALLWINNER_H6_GPIOH_NUMBER>;
 				gpio-controller;
 				// gpio-ranges = <&pinctrl 0 0 32>;
+				allwinner,gpio-bank-width =  <11>;
 				#gpio-cells = <2>;
 				interrupt-controller;
 				#interrupt-cells = <2>;

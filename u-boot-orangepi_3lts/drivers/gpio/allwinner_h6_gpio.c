@@ -1,8 +1,11 @@
+#define  LOG_CATEGORY UCLASS_GPIO
 
 #include <config.h>
 #include <common.h>
+#include <stdint.h>
 #include <clk.h>
 #include <dm.h>
+#include <dm/device_compat.h>
 #include <malloc.h>
 #include <asm/io.h>
 #include <linux/sizes.h>
@@ -30,17 +33,19 @@ typedef struct {
 typedef struct {
     fdt_addr_t  config_base;
     fdt_addr_t  interrupt_base;
-    uint32_t   pins:8;
+	uint32_t   gpio_count;
+    uint32_t   pins;
 } allwinner_h6_gpio_plat_t;
 
 
-static int allwinner_h6_gpio_direction_input(struct udevice *dev, unsigned pin)
+static int32_t allwinner_h6_gpio_direction_input(struct udevice *dev, uint32_t pin)
 {
 	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_gpio_config_t *  config_regs  =  
 									(allwinner_h6_gpio_config_t * )plat->config_base;
 
-	if (pin > ALLWINNER_H6_GPIO_MAX_PIN) {
+	if (pin >= plat->gpio_count) {
+		dev_err(dev, "pin_id [%u] invalid", pin);
 		return -EINVAL;
 	}
 
@@ -54,21 +59,16 @@ static int allwinner_h6_gpio_direction_input(struct udevice *dev, unsigned pin)
 }
 
 
-static int allwinner_h6_gpio_direction_output(struct udevice *dev, unsigned pin,
-				     int val)
+static int32_t allwinner_h6_gpio_direction_output(struct udevice *dev, uint32_t pin,
+				    int32_t val)
 {
 	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_gpio_config_t *  config_regs  =  
 									(allwinner_h6_gpio_config_t * )plat->config_base;
 
-	if (pin > ALLWINNER_H6_GPIO_MAX_PIN) {
+	if (pin >= plat->gpio_count) {
+		dev_err(dev, "pin_id [%u] invalid", pin);
 		return -EINVAL;
-	}
-
-	if (val) {
-		setbits_32(&config_regs->dat,  1 << pin);
-	} else {
-		clrbits_32(&config_regs->dat,  1 << pin);
 	}
 
 	uint32_t  offset  =  pin  >> 3;
@@ -76,17 +76,24 @@ static int allwinner_h6_gpio_direction_output(struct udevice *dev, unsigned pin,
 
 	clrsetbits_32(&config_regs->cfgx[offset],  0x7 << shift, 
 									ALLWINNER_H6_GPIO_OUTPUT << shift);
+	if (val) {
+		setbits_32(&config_regs->dat,  1 << pin);
+	} else {
+		clrbits_32(&config_regs->dat,  1 << pin);
+	}
+	
 	return 0;
 }
 
 
-static int allwinner_h6_gpio_get_value(struct udevice *dev, unsigned pin)
+static int32_t allwinner_h6_gpio_get_value(struct udevice *dev, uint32_t pin)
 {
 	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_gpio_config_t *  config_regs  =  
 									(allwinner_h6_gpio_config_t * )plat->config_base;
 
-	if (pin > ALLWINNER_H6_GPIO_MAX_PIN) {
+	if (pin >= plat->gpio_count) {
+		dev_err(dev, "pin_id [%u] invalid", pin);
 		return -EINVAL;
 	}
 
@@ -94,13 +101,14 @@ static int allwinner_h6_gpio_get_value(struct udevice *dev, unsigned pin)
 }
 
 
-static int allwinner_h6_gpio_set_value(struct udevice *dev, unsigned pin, int val)
+static int32_t allwinner_h6_gpio_set_value(struct udevice *dev, uint32_t pin, int32_t val)
 {
 	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_gpio_config_t *  config_regs  =  
 									(allwinner_h6_gpio_config_t * )plat->config_base;
 
-	if (pin > ALLWINNER_H6_GPIO_MAX_PIN) {
+	if (pin >= plat->gpio_count) {
+		dev_err(dev, "pin_id [%u] invalid", pin);
 		return -EINVAL;
 	}
 
@@ -114,13 +122,14 @@ static int allwinner_h6_gpio_set_value(struct udevice *dev, unsigned pin, int va
 }
 
 
-static int allwinner_h6_gpio_get_function(struct udevice *dev, uint32_t  pin)
+static int32_t allwinner_h6_gpio_get_function(struct udevice *dev, uint32_t  pin)
 {
 	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_gpio_config_t *  config_regs  =  
 									(allwinner_h6_gpio_config_t * )plat->config_base;
 
-	if (pin > ALLWINNER_H6_GPIO_MAX_PIN) {
+	if (pin >= plat->gpio_count) {
+		dev_err(dev, "pin_id [%u] invalid", pin);
 		return -EINVAL;
 	}
 
@@ -149,33 +158,32 @@ static const struct dm_gpio_ops allwinner_h6_gpio_ops = {
 };
 
 
-static int allwinner_h6_gpio_probe(struct udevice *dev)
+static int32_t allwinner_h6_gpio_probe(struct udevice *dev)
 {
 
 	return 0;
 }
 
-static int allwinner_h6_gpio_of_to_plat(struct udevice *dev)
+static int32_t allwinner_h6_gpio_of_to_plat(struct udevice *dev)
 {
+	int32_t  ret  =  0;
 	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
 
 	assert(plat != NULL);
 
 	plat->config_base  =  dev_read_addr_index(dev,  0);
 	plat->interrupt_base  =  dev_read_addr_index(dev,  1);
-
-	// plat->gpio_count = fdtdec_get_int(gd->fdt_blob, dev_of_offset(dev),
-	// 	"altr,gpio-bank-width", 32);
+	ret = dev_read_s32(dev, "allwinner,gpio-bank-width",  &plat->gpio_count);
 	// plat->bank_name = fdt_getprop(gd->fdt_blob, dev_of_offset(dev),
 	// 	"gpio-bank-name", NULL);
 
-	return 0;
+	return  ret;
 }
 
 
 
 static const struct udevice_id allwinner_h6_gpio_ids[] = {
-	{ .compatible = "allwinner, H6-v200-gpio" , .data = 0},
+	{ .compatible = "allwinner,H6-v200-gpio"},
 };
 
 U_BOOT_DRIVER(allwinner_h6_gpio) = {
