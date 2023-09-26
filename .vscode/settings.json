@@ -1,18 +1,6 @@
 {
     "files.associations": {
-        "allwinner-h6-clock.h": "c",
-        "io.h": "c",
-        "clk-allwinner-h6.h": "c",
-        "clk-uclass.h": "c",
-        "dm.h": "c",
-        "bitops.h": "c",
-        "bitsperlong.h": "c",
-        "types.h": "c",
-        "compiler.h": "c",
-        "rst-allwinner-h6.h": "c",
-        "stdint.h": "c",
-        "common.h": "c",
-        "delay.h": "c",
-        "allwinner_h6_gpio.h": "c"
+        "*.c": "c",
+        "*.h": "c"
     }
 }
