@@ -267,7 +267,7 @@ U_BOOT_DRIVER(serial_allwinner) = {
 };
 
 
-#ifdef CONFIG_DEBUG_UART
+#ifdef CONFIG_DEBUG_UART_ALLWINNER
 static inline void _debug_uart_init(void)
 {
 	allwinner_h6_uart_t * uart_reg = (allwinner_h6_uart_t *)CONFIG_VAL(DEBUG_UART_BASE);

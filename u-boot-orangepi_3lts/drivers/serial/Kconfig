@@ -469,6 +469,16 @@ config DEBUG_UART_MT7620
 	  driver will be available until the real driver model serial is
 	  running.
 
+config DEBUG_UART_ALLWINNER
+	bool "UART driver for Allwinner H6 and earlier SoCs"
+	depends on ALLWINNER_SERIAL
+	help
+	  Select this to enable a debug UART using the UART driver for
+	  Allwinner H6 and earlier SoCs.
+	  You will need to provide parameters to make this work. The
+	  driver will be available until the real driver model serial is
+	  running.
+
 endchoice
 
 config DEBUG_UART_BASE
@@ -1024,15 +1034,6 @@ config ZYNQ_SERIAL
 	  This driver supports the Cadence UART. It is found e.g. in Xilinx
 	  Zynq/ZynqMP.
 
-
-config ALLWINNER_USART
-	bool "ALLWINNER USART support"
-	depends on DM_SERIAL
-	help
-	  Select this to enable USART support for ALLWINNER SoCs. It can be
-	  configured in the device tree, and input clock frequency can
-	  be got from the clk node.
-
 config MTK_SERIAL
 	bool "MediaTek High-speed UART support"
 	depends on DM_SERIAL
@@ -1073,6 +1074,14 @@ config XEN_SERIAL
 	help
 	  If built without DM support, then requires Xen
 	  to be built with CONFIG_VERBOSE_DEBUG.
+
+
+config  ALLWINNER_SERIAL
+	bool "Allwinner H6 family soc serial support"
+	depends on DM_SERIAL && ARCH_ALLWINNER
+	help
+	  Select this to enable UART support for Allwinner H6 Socs.
+
 
 choice
 	prompt "Console port"
