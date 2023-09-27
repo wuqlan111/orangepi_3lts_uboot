@@ -268,11 +268,30 @@ U_BOOT_DRIVER(serial_allwinner) = {
 
 
 #ifdef CONFIG_DEBUG_UART_ALLWINNER
-static inline void _debug_uart_init(void)
-{
-	allwinner_h6_uart_t * uart_reg = (allwinner_h6_uart_t *)CONFIG_VAL(DEBUG_UART_BASE);
 
-	_allwinner_h6_serial_init(uart_reg, CONFIG_DEBUG_UART_CLOCK, CONFIG_BAUDRATE);
+#define  CCU_BASE_ADDR    0x03000000
+
+static int32_t  _ccu_get_uart_apb2_clk(ulong * clk)
+{
+	const uint32_t apb2_reg = 0x03000524;
+	const uint32_t flag = readl(apb2_reg);
+	const uint32_t src_select = (flag >> 24) & 0x3;
+	const uint32_t clk_n  =  (flag >> 8) & 0x3;
+	const uint32_t clk_m  =  flag & 0x3;
+
+	ulong src_rate  =  0;
+	if (!src_select) {
+		src_rate  =  24000000;
+	} else if (src_select == 1) {
+		src_rate  =  32768;
+	} else {
+		return  -1;
+	}
+
+	*clk =  (src_rate) / ( (1 << clk_n) * (clk_m+1) );
+
+	return  0;
+
 }
 
 static inline void _debug_uart_putc(int ch)
@@ -284,6 +303,27 @@ static inline void _debug_uart_putc(int ch)
 
 	writel(ch, &uart_reg->thr);
 }
+
+
+static inline void _debug_uart_init(void)
+{
+	ulong apb2_clk =  0;
+	allwinner_h6_uart_t * uart_reg = (allwinner_h6_uart_t *)CONFIG_VAL(DEBUG_UART_BASE);
+
+	if (_ccu_get_uart_apb2_clk(&apb2_clk)) {
+		return;
+	}
+
+	_allwinner_h6_serial_init(uart_reg, apb2_clk, CONFIG_BAUDRATE);
+
+	char test[] = "heehe\r\n";
+	for (int32_t i =  0; i < strlen(test); i++) {
+		_debug_uart_putc(test[i]);
+	}
+
+
+}
+
 
 DEBUG_UART_FUNCS
 #endif

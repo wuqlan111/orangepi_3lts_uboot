@@ -7,4 +7,10 @@ config H6_V200
 	select DM_EVENT
 	select OF_CONTROL
 	select MISC
+	select SUPPORT_SPL
+	imply SPL_SEPARATE_BSS if SPL
+	imply CMD_DM
+	imply SPL_DM  if SPL
+	imply SPL_SERIAL if SPL
+	imply SPL_TIMER if SPL
 
