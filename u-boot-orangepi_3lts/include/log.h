@@ -686,4 +686,8 @@ static inline int log_get_default_format(void)
 	       (IS_ENABLED(CONFIG_LOGF_FUNC) ? BIT(LOGF_FUNC) : 0);
 }
 
+
+#define  _DBG_PRINTF(fmt, args...)   printf("[%s: %u] - " fmt, __FILE__, __LINE__, ##args)
+#define  _DBG_PRINTF_LINE()            printf("\n\n\n")
+
 #endif
