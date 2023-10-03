@@ -2,15 +2,14 @@ config H6_V200
 	bool "allwinner h6 family"
 	select ARM64
 	select ARMV8_SET_SMPEN
-	select ARCH_SUPPORT_TFABOOT
 	select DM
-	select DM_EVENT
 	select OF_CONTROL
 	select MISC
 	select SUPPORT_SPL
-	imply SPL_SEPARATE_BSS if SPL
-	imply CMD_DM
-	imply SPL_DM  if SPL
-	imply SPL_SERIAL if SPL
-	imply SPL_TIMER if SPL
+	imply  SPL_SERIAL if SPL
+	imply  SPL_TIMER if SPL
+	imply  SPL_MMC  if SPL
+	imply  FIT  if SPL
+	imply  SPL_STACK_R if SPL
+	imply  SPL_LOAD_FIT  if SPL
 
