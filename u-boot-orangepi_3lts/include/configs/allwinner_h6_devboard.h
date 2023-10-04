@@ -15,6 +15,14 @@
 
 
 
+/* UART */
+#define UART0_BASE             (0x05000000u)
+#define UART1_BASE             (0x05000400u)
+#define UART2_BASE             (0x05000800u)
+#define UART3_BASE             (0x05000c00u)
+#define R_UART0_BASE           (0x07080000u)
+#define CFG_MXC_UART_BASE		UART0_BASE
+
 
 #endif
 
