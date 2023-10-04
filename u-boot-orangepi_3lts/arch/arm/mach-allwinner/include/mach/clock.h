@@ -6,38 +6,18 @@
 
 #define   CCU_BASE_ADDR     (0x03001000u)
 
-#define  CCU_PLL(x)        CCU_PLL_##x
-#define  CCU_CLK(x)        CCU_CLK_##x
-
-enum {
-    CCU_PLL(CPUX)  = 0,
-    CCU_PLL(DDR0),
-    CCU_PLL(PER0),
-    CCU_PLL(PER1),
-    CCU_PLL(GPU),
-    CCU_PLL(VIDEO0),
-    CCU_PLL(VIDEO1),
-    CCU_PLL(VE),
-    CCU_PLL(DE),
-    CCU_PLL(HSIC),
-    CCU_PLL(AUDIO),
-    CCU_PLL_MAX  =  CCU_PLL(AUDIO),
-};
-
-
-enum  {
-    CCU_CLK(AXI) =  0,
-    CCU_CLK(PSI_AHB1),
-    CCU_CLK(AHB3),
-    CCU_CLK(APB1),
-    CCU_CLK(APB2),
-    CCU_CLK_MAX  =   CCU_CLK(APB2),
-};
+/*ccu apbx clk cfg*/
+#define  CCU_APBX_CFG(n)    (CCU_BASE_ADDR + 0x520 + (n) * 4)
 
 
 
 
-
+/*uart clk gate reg*/
+#define  CCU_UARTX_GATE_REG       (CCU_BASE_ADDR + 0x90c)
+#define  CCU_UART0_ID              0
+#define  CCU_UART1_ID              1
+#define  CCU_UART2_ID              2
+#define  CCU_UART3_ID              3
 
 
 
