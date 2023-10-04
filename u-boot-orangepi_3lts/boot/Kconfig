@@ -283,12 +283,13 @@ config USE_SPL_FIT_GENERATOR
 	bool "Use a script to generate the .its script"
 	depends on SPL_FIT
 	default y if SPL_FIT && ARCH_ZYNQMP
-	default y if SPL_FIT && ARCH_ALLWINNER
+	# default y if SPL_FIT && ARCH_ALLWINNER
 
 config SPL_FIT_GENERATOR
 	string ".its file generator script for U-Boot FIT image"
 	depends on USE_SPL_FIT_GENERATOR
 	default "arch/arm/mach-zynqmp/mkimage_fit_atf.sh" if SPL_LOAD_FIT && ARCH_ZYNQMP
+	# default "board/allwinner/h6_v200/mkimage_fit.sh" if SPL_LOAD_FIT && ARCH_ALLWINNER
 	help
 	  Specifies a (platform specific) script file to generate the FIT
 	  source file used to build the U-Boot FIT image file. This gets

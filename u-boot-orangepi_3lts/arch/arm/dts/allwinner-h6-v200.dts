@@ -2,6 +2,7 @@
 /dts-v1/;
 
 #include "allwinner-h6.dtsi"
+#include "allwinner-u-boot.dtsi"
 
 / {
 	model = "Allwinner H6 v200 family Soc";

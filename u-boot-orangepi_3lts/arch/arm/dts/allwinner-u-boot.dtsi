@@ -1,0 +1,60 @@
+#include <config.h>
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+};
+
+&binman {
+	u-boot-allwinner-with-spl {
+		filename = "u-boot-allwinner-with-spl.bin";
+		pad-byte = <0xff>;
+
+		blob {
+			filename = "spl/u-boot-spl.bin";
+		};
+
+#ifdef CONFIG_ARM64
+		fit {
+			description = "Configuration U-Boot Fit Image";
+			#address-cells = <1>;
+			fit,fdt-list = "of-list";
+
+			images {
+				uboot {
+					description = "U-Boot (64-bit)";
+					type = "standalone";
+					os = "u-boot";
+					arch = "arm64";
+					compression = "none";
+					load = <CONFIG_TEXT_BASE>;
+
+					u-boot-nodtb {
+					};
+				};
+
+				@fdt-SEQ {
+					description = "NAME";
+					type = "flat_dt";
+					compression = "none";
+				};
+			};
+
+			configurations {
+				default = "@config-DEFAULT-SEQ";
+
+				@config-SEQ {
+					description = "NAME";
+					loadables = "uboot";
+					fdt = "fdt-SEQ";
+				};
+			};
+		};
+#else
+		u-boot-img {
+			offset = <CONFIG_SPL_PAD_TO>;
+		};
+#endif
+	};
+};
