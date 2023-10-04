@@ -14,6 +14,20 @@ config H6_V200
 	imply  FIT  if SPL
 	imply  SPL_STACK_R if SPL
 	imply  SPL_LOAD_FIT  if SPL
-    imply  SPL_LIBGENERIC_SUPPORT  if SPL
+	imply  SPL_FRAMEWORK  if SPL
+	imply  SPL_LIBGENERIC_SUPPORT if SPL
+	imply  SPL_PRINT  if SPL
+
+config ALLWINNER_SRAM_ADDRESS
+	hex
+	default 0x20000
+	help
+		Older Allwinner SoCs have their mask boot ROM mapped just below 4GB,
+		with the first SRAM region being located at address 0.
+		Some newer SoCs map the boot ROM at address 0 instead and move the
+		SRAM to a different address.
+
+config SYS_SOC
+	default "allwinner"
 
 endif

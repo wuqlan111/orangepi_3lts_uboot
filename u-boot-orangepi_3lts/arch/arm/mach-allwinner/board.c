@@ -12,7 +12,9 @@
 
 #include <linux/compiler.h>
 
-//设置内存映射区域
+#ifdef CONFIG_ARM64
+#include <asm/armv8/mmu.h>
+
 static struct mm_region allwinner_h6_mem_map[] = {
 	{
 		/* SRAM, MMIO regions */
@@ -29,19 +31,20 @@ static struct mm_region allwinner_h6_mem_map[] = {
 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 			 PTE_BLOCK_INNER_SHARE
 	}, {
-		/* List terminator */
-		0,
+		0
 	}
 };
-struct mm_region *mem_map = sunxi_mem_map;
+struct mm_region * mem_map = allwinner_h6_mem_map;
+
+#endif
 
 
+int32_t board_init(void)
+{
+	// gd->bd->bi_boot_params = CFG_SYS_SDRAM_BASE + 0x100;
 
-
-
-
-
-
+	return 0;
+}
 
 
 

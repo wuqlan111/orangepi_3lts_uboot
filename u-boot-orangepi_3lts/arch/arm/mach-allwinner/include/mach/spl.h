@@ -19,7 +19,7 @@
 #define SPL_DT_HEADER_VERSION	SPL_VERSION(0, 2)
 #define SPL_DRAM_HEADER_VERSION	SPL_VERSION(0, 3)
 
-#define SPL_ADDR		CONFIG_SUNXI_SRAM_ADDRESS
+#define SPL_ADDR		CONFIG_ALLWINNER_SRAM_ADDRESS
 
 /* The low 8-bits of the 'boot_media' field in the SPL header */
 #define ALLWINNER_BOOTED_FROM_MMC0	0
@@ -60,7 +60,7 @@ typedef struct boot_file_head {
 	uint32_t boot_media;		/* written here by the boot ROM */
 	uint32_t string_pool[13];	/* since v0.2, filled by mksunxiboot */
 	/* The header must be a multiple of 32 bytes (for VBAR alignment) */
-} __attribute__((pack)) boot0_file_header_t;
+} boot0_file_header_t;
 
 
 

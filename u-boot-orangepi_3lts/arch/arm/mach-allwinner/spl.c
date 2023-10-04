@@ -13,18 +13,16 @@
 
 #include <linux/compiler.h>
 
-#ifdef CONFIG_SPL_BUILD
-
 static int32_t allwinner_get_boot_source(uint32_t * const boot_source)
 {
 	boot0_file_header_t * const header =  (boot0_file_header_t *)SPL_ADDR;
 
-    if (memcmp(headr->magic, BOOT0_MAGIC, 8)) {
+    if (memcmp(header->magic, BOOT0_MAGIC, 8)) {
         panic("invalid boot source\n");
         return  -1;
     }
 
-    uint32_t boot_media = cpu_to_be32(header->boot_media) & 0xff;
+    *boot_source = cpu_to_be32(header->boot_media) & 0xff;
 	return  0;
 }
 
@@ -34,8 +32,7 @@ static int32_t allwinner_get_boot_source(uint32_t * const boot_source)
 uint32_t allwinner_get_boot_device(void)
 {
     uint32_t  boot_source  =  0;
-    uint32_t  boot_device  =  0;
-	sunxi_get_boot_source(&boot_source);
+	allwinner_get_boot_source(&boot_source);
 
 	/*
 	 * When booting from the SD card or NAND memory, the "eGON.BT0"
@@ -54,8 +51,6 @@ uint32_t allwinner_get_boot_device(void)
 	 * read from.
 	 */
 	switch (boot_source) {
-        case ALLWINNER_INVALID_BOOT_SOURCE:
-            return BOOT_DEVICE_BOARD;
         case ALLWINNER_BOOTED_FROM_MMC0:
         case ALLWINNER_BOOTED_FROM_MMC0_HIGH:
             return BOOT_DEVICE_MMC1;
@@ -80,8 +75,8 @@ uint64_t spl_mmc_get_uboot_raw_sector(struct mmc *mmc)
 
     allwinner_get_boot_source(&boot_source);
 
-    if ( (boot_source == SUNXI_BOOTED_FROM_MMC0_HIGH) || 
-                (boot_source == SUNXI_BOOTED_FROM_MMC0_HIGH )) {
+    if ( (boot_source == ALLWINNER_BOOTED_FROM_MMC0_HIGH) || 
+                (boot_source == ALLWINNER_BOOTED_FROM_MMC2_HIGH )) {
         sector += (128 - 8) * 2;
     }
 
@@ -117,7 +112,4 @@ void board_init_f(ulong dummy)
 
 
 }
-
-
-#endif
 

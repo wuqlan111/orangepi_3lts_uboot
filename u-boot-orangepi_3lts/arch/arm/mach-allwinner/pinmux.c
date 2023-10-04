@@ -14,7 +14,7 @@ typedef struct {
 
 int32_t  set_gpio_pin_func(const uint32_t bank, const uint32_t pin, const uint32_t func)
 {
-    pinmux_cfg_t * cfg_regs = GPIO_BANK_ADDR(bank);
+    pinmux_cfg_t * cfg_regs = (pinmux_cfg_t *)GPIO_BANK_ADDR(bank);
     if (bank > GPIO_MAX_BANK || (pin > 31)  || (func > 7)) {
         return  -1;
     }
@@ -34,7 +34,7 @@ int32_t  set_gpio_pin_func(const uint32_t bank, const uint32_t pin, const uint32
 
 int32_t  set_gpio_pin_pull(const uint32_t bank, const uint32_t pin, const uint32_t pull_type)
 {
-    pinmux_cfg_t * cfg_regs = GPIO_BANK_ADDR(bank);
+    pinmux_cfg_t * cfg_regs = (pinmux_cfg_t *)GPIO_BANK_ADDR(bank);
     if ( (bank > GPIO_MAX_BANK) ||  (pin > 31) || (pull_type > GPIO_PULL_MAX)) {
         return  -1;
     }
@@ -54,7 +54,7 @@ int32_t  set_gpio_pin_pull(const uint32_t bank, const uint32_t pin, const uint32
 
 int32_t  set_gpio_pin_drive(const uint32_t bank, const uint32_t pin, const uint32_t drive_level)
 {
-    pinmux_cfg_t * cfg_regs = GPIO_BANK_ADDR(bank);
+    pinmux_cfg_t * cfg_regs = (pinmux_cfg_t *)GPIO_BANK_ADDR(bank);
     if ( (bank > GPIO_MAX_BANK) ||  (pin > 31) || 
                     (drive_level > GPIO_DRIVE_MAX_LEVEL)) {
         return  -1;
@@ -63,7 +63,7 @@ int32_t  set_gpio_pin_drive(const uint32_t bank, const uint32_t pin, const uint3
     uint32_t index  =  pin  >> 4;
     uint32_t shift  =  (pin & 0xf) << 1;
 
-    uint32_t  flag  =  pull_type << shift;
+    uint32_t  flag  =  drive_level << shift;
     uint32_t  mask  =  0x3 << shift;
 
     clrsetbits_32(&cfg_regs->drive[index],  mask,  flag);

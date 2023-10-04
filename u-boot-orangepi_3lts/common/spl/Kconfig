@@ -111,7 +111,7 @@ config SPL_PAD_TO
 config SPL_HAS_BSS_LINKER_SECTION
 	depends on SPL_FRAMEWORK
 	bool "Use a specific address for the BSS via the linker script"
-	default y if ARCH_SUNXI || ARCH_MX6 || ARCH_OMAP2PLUS || MIPS || RISCV || ARCH_ZYNQMP
+	default y if ARCH_ALLWINNER || ARCH_MX6 || ARCH_OMAP2PLUS || MIPS || RISCV || ARCH_ZYNQMP
 
 config SPL_BSS_START_ADDR
 	hex "Link address for the BSS within the SPL binary"
@@ -460,7 +460,7 @@ config SPL_DISPLAY_PRINT
 
 config SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
 	bool "MMC raw mode: by sector"
-	default y if ARCH_SUNXI || ARCH_DAVINCI || ARCH_UNIPHIER || \
+	default y if ARCH_SUNXI  || ARCH_ALLWINNER || ARCH_DAVINCI || ARCH_UNIPHIER || \
 		     ARCH_MX6 || ARCH_MX7 || \
 		     ARCH_ROCKCHIP || ARCH_MVEBU ||  ARCH_SOCFPGA || \
 		     ARCH_AT91 || ARCH_ZYNQ || ARCH_KEYSTONE || OMAP34XX || \
@@ -478,6 +478,7 @@ config SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR
 	default 0x8a if ARCH_MX6 || ARCH_MX7
 	default 0x100 if ARCH_UNIPHIER
 	default 0x0 if ARCH_MVEBU
+	default 0x50 if ARCH_ALLWINNER
 	default 0x200 if ARCH_SOCFPGA || ARCH_AT91
 	default 0x300 if ARCH_ZYNQ || ARCH_KEYSTONE || OMAP34XX || OMAP44XX || \
 		         OMAP54XX || AM33XX || AM43XX || ARCH_K3
@@ -578,6 +579,7 @@ config SPL_FIT_IMAGE_TINY
 	depends on SPL_FIT
 	default y if MACH_SUN50I || MACH_SUN50I_H5 || SUN50I_GEN_H6
 	default y if ARCH_IMX8M || ARCH_IMX9
+	default y if ARCH_ALLWINNER
 	help
 	  Enable this to reduce the size of the FIT image loading code
 	  in SPL, if space for the SPL binary is very tight.

@@ -13,6 +13,7 @@
 #include <asm/io.h>
 #include <asm/types.h>
 #include <dm/device_compat.h>
+#include <dm/device.h>
 #include "serial_allwinner.h"
 
 typedef struct {
@@ -273,7 +274,7 @@ U_BOOT_DRIVER(serial_allwinner) = {
 
 static int32_t  _ccu_get_uart_apb2_clk(ulong * clk)
 {
-	const uint32_t apb2_reg = 0x03000524;
+	const uint32_t * apb2_reg = (const uint32_t *)0x03000524;
 	const uint32_t flag = readl(apb2_reg);
 	const uint32_t src_select = (flag >> 24) & 0x3;
 	const uint32_t clk_n  =  (flag >> 8) & 0x3;
