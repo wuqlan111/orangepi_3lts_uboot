@@ -24,5 +24,13 @@
 #define CFG_MXC_UART_BASE		UART0_BASE
 
 
+/*rtc base addr*/
+#define  ALLWINNER_RTC_BASE_ADDR          (0x07000000u)
+
+
+/*cpu hot flag cfg*/
+#define  ALLWINNER_CPU_HOT_CFG_ADDR           (ALLWINNER_RTC_BASE_ADDR + 0x1b8)
+
+
 #endif
 

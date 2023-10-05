@@ -48,6 +48,17 @@ struct mm_region * mem_map = allwinner_h6_mem_map;
 
 #endif
 
+#ifdef CONFIG_SPL_BUILD
+static int32_t spl_board_load_image(struct spl_image_info *spl_image,
+				struct spl_boot_device *bootdev)
+{
+	debug("Returning to FEL sp=%x, lr=%x\n", fel_stash.sp, fel_stash.lr);
+	return_to_fel(fel_stash.sp, fel_stash.lr);
+
+	return 0;
+}
+SPL_LOAD_IMAGE_METHOD("FEL", 0, BOOT_DEVICE_BOARD, spl_board_load_image);
+#endif
 
 int32_t board_init(void)
 {

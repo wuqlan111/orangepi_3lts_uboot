@@ -81,6 +81,7 @@ config SPL_MAX_SIZE
 	default 0x10000 if ARCH_MX6 && !MX6_OCRAM_256KB
 	default 0x7fa0 if SUNXI_SRAM_ADDRESS = 0x10000
 	default 0x7fa0 if SUNXI_SRAM_ADDRESS = 0x20000 && !MACH_SUN50I_H616
+	default 0x7fa0 if ALLWINNER_SRAM_ADDRESS = 0x20000
 	default 0xbfa0 if MACH_SUN50I_H616
 	default 0x7000 if RCAR_GEN3
 	default 0x5fa0 if SUNXI_SRAM_ADDRESS = 0x0
@@ -98,6 +99,7 @@ config SPL_PAD_TO
 	default 0x11000 if ARCH_MX7 || (ARCH_MX6 && !MX6_OCRAM_256KB)
 	default 0x10000 if ARCH_KEYSTONE
 	default 0x8000 if ARCH_SUNXI && !MACH_SUN50I_H616
+	default 0x8000 if ARCH_ALLWINNER
 	default 0x0 if ARCH_MTMIPS
 	default TPL_MAX_SIZE if TPL_MAX_SIZE > SPL_MAX_SIZE
 	default SPL_MAX_SIZE
