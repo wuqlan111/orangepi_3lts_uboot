@@ -4,20 +4,39 @@ config H6_V200
 	bool "allwinner h6 family"
 	select ARM64
 	select ARMV8_SET_SMPEN
-	select DM
-	select OF_CONTROL
 	select MISC
 	select SUPPORT_SPL
 	imply  SPL_SERIAL if SPL
 	imply  SPL_TIMER if SPL
 	imply  SPL_MMC  if SPL
-	imply  FIT  if SPL
-	imply  SPL_STACK_R if SPL
 	imply  SPL_LOAD_FIT  if SPL
 	imply  SPL_FRAMEWORK  if SPL
-	imply  SPL_LIBGENERIC_SUPPORT if SPL
-	imply  SPL_LIBCOMMON_SUPPORT  if SPL
 	imply  SPL_PRINTF  if SPL
+
+choice
+	prompt "SPL Image Type"
+	default SPL_IMAGE_TYPE_ALLWINNER_EGON
+
+config SPL_IMAGE_TYPE_ALLWINNER_EGON
+	bool "eGON (normal)"
+	help
+	  Select this option to embed the SPL binary in an eGON.BT0 image,
+	  which is compatible with the normal boot ROM (NBROM).
+
+	  This is usually the correct option to choose.
+
+config SPL_IMAGE_TYPE_ALLWINNER_TOC0
+	bool "TOC0 (secure)"
+	help
+	  Select this option to embed the SPL binary in a TOC0 image,
+	  which is compatible with the secure boot ROM (SBROM).
+
+endchoice
+
+config SPL_IMAGE_TYPE
+	string
+	default "sunxi_egon" if SPL_IMAGE_TYPE_ALLWINNER_EGON
+	default "sunxi_toc0" if SPL_IMAGE_TYPE_ALLWINNER_TOC0
 
 config ALLWINNER_SRAM_ADDRESS
 	hex

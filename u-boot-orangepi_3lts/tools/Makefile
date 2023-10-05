@@ -28,7 +28,7 @@ CONFIG_ARCH_KIRKWOOD = y
 CONFIG_CMD_LOADS = y
 CONFIG_CMD_NET = y
 CONFIG_NETCONSOLE = y
-CONFIG_ARCH_SUNXI = y
+CONFIG_ARCH_ALLWINNER = y
 endif
 
 subdir-$(HOST_TOOLS_ALL) += gdb
@@ -207,8 +207,8 @@ hostprogs-$(CONFIG_MX23) += mxsboot
 hostprogs-$(CONFIG_MX28) += mxsboot
 HOSTCFLAGS_mxsboot.o := -pedantic
 
-hostprogs-$(CONFIG_ARCH_SUNXI) += mksunxiboot
-hostprogs-$(CONFIG_ARCH_SUNXI) += sunxi-spl-image-builder
+hostprogs-$(CONFIG_ARCH_ALLWINNER) += mksunxiboot
+hostprogs-$(CONFIG_ARCH_ALLWINNER) += sunxi-spl-image-builder
 sunxi-spl-image-builder-objs := sunxi-spl-image-builder.o lib/bch.o
 
 hostprogs-$(CONFIG_NETCONSOLE) += ncb
