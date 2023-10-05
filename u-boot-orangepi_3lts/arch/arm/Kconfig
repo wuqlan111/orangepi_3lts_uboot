@@ -1216,6 +1216,7 @@ config ARCH_ALLWINNER
 	select DM_MMC if MMC
 	select DM_SERIAL
 	select OF_CONTROL
+	select OF_SEPARATE
 	select PINCTRL
 	select SPECIFY_CONSOLE_INDEX
 	select SPL_SEPARATE_BSS if SPL

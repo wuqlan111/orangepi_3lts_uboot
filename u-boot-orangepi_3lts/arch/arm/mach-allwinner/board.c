@@ -12,6 +12,16 @@
 
 #include <linux/compiler.h>
 
+typedef struct {
+	uint32_t sp;
+	uint32_t lr;
+	uint32_t cpsr;
+	uint32_t sctlr;
+	uint32_t vbar;
+} fel_stash_t;
+
+fel_stash_t fel_stash __section(".data");
+
 #ifdef CONFIG_ARM64
 #include <asm/armv8/mmu.h>
 
