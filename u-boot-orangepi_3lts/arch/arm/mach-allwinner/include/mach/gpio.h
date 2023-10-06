@@ -17,8 +17,12 @@ enum {
     GPIO_MAX_BANK = GPIOM,
 };
 
-#define  GPIO_BANK_ADDR(n)    ( (n) >= GPIOL ? GPIO_BASE_R_ADDR + ((n) - GPIOL) * 4: \
-                            GPIO_BASE_ADDR + (n) * 4 )
+
+#define  GPIO_CFG_REG_STEP              (0x24u)
+
+
+#define  GPIO_BANK_ADDR(n)    ( (n) >= GPIOL ? GPIO_BASE_R_ADDR + ((n) - GPIOL) * GPIO_CFG_REG_STEP: \
+                            GPIO_BASE_ADDR + (n) * GPIO_CFG_REG_STEP )
 
 
 enum {

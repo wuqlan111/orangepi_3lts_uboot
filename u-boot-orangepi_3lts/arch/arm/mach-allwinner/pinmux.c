@@ -15,7 +15,7 @@ typedef struct {
 int32_t  set_gpio_pin_func(const uint32_t bank, const uint32_t pin, const uint32_t func)
 {
     pinmux_cfg_t * cfg_regs = (pinmux_cfg_t *)GPIO_BANK_ADDR(bank);
-    if (bank > GPIO_MAX_BANK || (pin > 31)  || (func > 7)) {
+    if ( (bank > GPIO_MAX_BANK) || (pin > 31)  || (func > 7)) {
         return  -1;
     }
 

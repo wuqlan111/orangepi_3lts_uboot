@@ -26,7 +26,7 @@
 	.word	0xf57ff06f	// isb     sy
 	.word	0xe320f003	// wfi
 	.word	0xeafffffd	// b       @wfi
-#ifndef CONFIG_MACH_SUN50I_H6
+#ifndef CONFIG_H6_V200
 	.word	0x017000a0	// writeable RVBAR mapping address
 #else
 	.word	0x09010040	// writeable RVBAR mapping address
@@ -40,4 +40,16 @@
 /* normal execution */
 	b	reset
 #endif
+
+
+
+#if 0
+	ldr  x0,  =0x07022000
+	mov  x1,  #0x1 << 16
+	str  x1,  [x0]
+	mov  x1,  #0x10
+	str  x1,  [x0, #0x10]
+#endif
+
+
 
