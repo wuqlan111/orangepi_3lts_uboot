@@ -6,9 +6,7 @@ config H6_V200
 	select ARMV8_SET_SMPEN
 	select MISC
 	select SUPPORT_SPL
-	imply  SPL_SERIAL if SPL
 	imply  SPL_TIMER if SPL
-	imply  SPL_MMC  if SPL
 	imply  SPL_LOAD_FIT  if SPL
 	imply  SPL_FRAMEWORK  if SPL
 	imply  SPL_PRINTF  if SPL

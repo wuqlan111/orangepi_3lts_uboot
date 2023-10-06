@@ -1227,6 +1227,12 @@ config ARCH_ALLWINNER
 	imply  FIT
 	imply  SPL_LIBGENERIC_SUPPORT if SPL
 	imply  SPL_LIBCOMMON_SUPPORT  if SPL
+	imply  OF_LIBFDT_OVERLAY
+	imply  PRE_CONSOLE_BUFFER
+	imply  SPL_GPIO if SPL
+	imply  SPL_SERIAL if SPL
+	imply  SPL_MMC  if SPL && MMC
+	imply  WDT
 
 
 config ARCH_ZYNQ
