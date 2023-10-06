@@ -13,6 +13,7 @@
 #include <asm/io.h>
 #include <asm/types.h>
 #include <dm/device_compat.h>
+#include <asm/arch/gpio.h>
 #include <dm/device.h>
 #include "serial_allwinner.h"
 
@@ -63,7 +64,7 @@ typedef  struct {
 
 static int32_t  _ccu_get_uart_apb2_clk(ulong * clk)
 {
-	const uint32_t * apb2_reg = (const uint32_t *)0x03000524;
+	const uint32_t * apb2_reg = (const uint32_t *)0x03001524;
 	const uint32_t flag = readl(apb2_reg);
 	const uint32_t src_select = (flag >> 24) & 0x3;
 	const uint32_t clk_n  =  (flag >> 8) & 0x3;
@@ -86,19 +87,19 @@ static int32_t  _ccu_get_uart_apb2_clk(ulong * clk)
 
 #endif
 
-static int _allwinner_h6_serial_setbrg(allwinner_h6_uart_t * uart_reg, 
-											ulong clk_rate, int baudrate)
+static int _allwinner_h6_serial_setbrg(allwinner_h6_uart_t * const uart_reg, 
+										const ulong clk_rate, const int baudrate)
 {
 	assert(uart_reg != NULL);
 
-	if ( baudrate <= 0) {
+	ulong  tmp_baudrate  =  baudrate  << 4;
+	ulong  divisor  =  clk_rate  / tmp_baudrate;
+	ulong  integer_part  =  divisor;
+
+	if ( (baudrate <= 0)  ||  !divisor ) {
 		log_err("baudrate[%d] invalid!\n", baudrate);
 		return  -EINVAL;
 	}
-
-	ulong  tmp_baudrate  =  clk_rate  << 4;
-	ulong  divisor  =  clk_rate  / tmp_baudrate;
-	ulong  integer_part  =  divisor;
 
 	if (clk_rate % tmp_baudrate) {
 		integer_part +=1;
@@ -120,18 +121,19 @@ static int _allwinner_h6_serial_setbrg(allwinner_h6_uart_t * uart_reg,
 }
 
 
-static  int  _allwinner_h6_serial_init(allwinner_h6_uart_t * uart_reg,
-			ulong usart_clk_rate, int baudrate)
+static  int  _allwinner_h6_serial_init(allwinner_h6_uart_t * const uart_reg,
+			const ulong usart_clk_rate, const int baudrate)
 {
 	int  ret = 0;
 	assert(uart_reg != NULL);
 
-	while (readl(&uart_reg->usr) & ALLWINNER_UART_SR_BUSY)
+	while (readl(&uart_reg->usr) & ALLWINNER_UART_SR_BUSY) {
 		;
+	}
 
 	writel(0, &uart_reg->ier);
 	writel(0, &uart_reg->fcr);
-	writel(0xb,  &uart_reg->lcr);
+	writel(0x3,  &uart_reg->lcr);
 	writel(0,  &uart_reg->mcr);
 
 	ret = _allwinner_h6_serial_setbrg(uart_reg, usart_clk_rate, baudrate);
@@ -148,6 +150,8 @@ static int _allwinner_h6_serial_getc(allwinner_h6_uart_t * const uart_reg)
 		return  -EAGAIN;
 	}
 
+	clrbits_32(&uart_reg->lcr,  ALLWINNER_UART_LCR_DLAB);
+
 	return readl(&uart_reg->rbr);
 }
 
@@ -161,6 +165,7 @@ static int _allwinner_h6_serial_putc(allwinner_h6_uart_t * const uart_reg, const
 		return  -EAGAIN;
 	}
 
+	clrbits_32(&uart_reg->lcr,  ALLWINNER_UART_LCR_DLAB);
 	writel(ch,  &uart_reg->thr);
 
 	return  0;
@@ -334,7 +339,13 @@ int32_t allwinner_uartx_init(void)
 		return ret;
 	}
 
-	return  _allwinner_h6_serial_init(regs,  clk,  gd->baudrate);
+	ret  =  _allwinner_h6_serial_init(regs,  clk,  gd->baudrate);
+
+	if ( !ret && (readl(&regs->lcr) ==  0x3) ) {
+	
+	}
+
+	return  ret;
 
 }
 
@@ -390,6 +401,11 @@ void allwinner_uartx_putc(const char c)
 	do {
 		ret = _allwinner_h6_serial_putc(regs,  c);
 	} while (ret == -EAGAIN);
+
+	if (!ret) {
+		allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_DISABLE,  1);
+		allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  0);
+	}
 
 }
 

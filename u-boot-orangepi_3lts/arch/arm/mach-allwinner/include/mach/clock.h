@@ -19,7 +19,7 @@
 #define  CCU_UART2_ID              2
 #define  CCU_UART3_ID              3
 
-
+int32_t  uart_clk_init(const uint32_t uart_id);
 
 
 

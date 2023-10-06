@@ -98,16 +98,20 @@ void board_init_f(ulong dummy)
 {
     int32_t  ret  =  0;
 
-	allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_UP,  1);
-	allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_UP,  1);
+	// allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_DISABLE,  1);
+	// allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  0);
+
+	set_gpio_pin_func( GPIOH,  0,  2);
+	set_gpio_pin_func( GPIOH,  1,  2);
+	set_gpio_pin_pull(GPIOH,  1, GPIO_PULL_UP);
+	uart_clk_init(CCU_UART0_ID);
+	preloader_console_init();
 
 	ret = spl_init();
     if (ret) {
         panic("spl_init failed!\n");
         return;
     }
-
-	preloader_console_init();
 
 	_DBG_PRINTF("preloader_console_init finished, start allwinner_spl_board_init!\n");
 	allwinner_spl_board_init();
