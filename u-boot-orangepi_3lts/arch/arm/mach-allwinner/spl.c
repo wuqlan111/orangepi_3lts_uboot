@@ -98,6 +98,9 @@ void board_init_f(ulong dummy)
 {
     int32_t  ret  =  0;
 
+	allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_UP,  1);
+	allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_UP,  1);
+
 	ret = spl_init();
     if (ret) {
         panic("spl_init failed!\n");

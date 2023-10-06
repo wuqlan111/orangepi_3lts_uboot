@@ -65,7 +65,7 @@ typedef struct boot_file_head {
 
 
 
-
+void sunxi_board_init(void);
 
 
 

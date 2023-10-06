@@ -14,6 +14,7 @@
  */
 #define PAD_SIZE			8192
 #define PAD_SIZE_MIN			512
+#define SUNXI_EGON_IMAGE_MIN_SIZE        32768
 
 static int egon_get_arch(struct image_tool_params *params)
 {
@@ -178,8 +179,15 @@ static int egon_vrec_header(struct image_tool_params *params,
 
 	tparams->hdr = calloc(sizeof(struct boot_file_head), 1);
 
+	uint32_t  ext_pad =  0;
+	if (ALIGN(params->file_size, pad_size) < SUNXI_EGON_IMAGE_MIN_SIZE) {
+		return  SUNXI_EGON_IMAGE_MIN_SIZE - params->file_size;
+	} else {
+		return  ALIGN(params->file_size, pad_size) - params->file_size;
+	}
+
 	/* Return padding to complete blocks. */
-	return ALIGN(params->file_size, pad_size) - params->file_size;
+	// return ALIGN(params->file_size, pad_size) - params->file_size;
 }
 
 U_BOOT_IMAGE_TYPE(
