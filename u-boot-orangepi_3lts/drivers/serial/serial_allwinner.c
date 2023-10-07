@@ -326,7 +326,7 @@ U_BOOT_DRIVER(serial_allwinner) = {
 
 #else
 
-#define ALLWINNER_UART0_BASE   CFG_MXC_UART_BASE
+#define ALLWINNER_UART0_BASE   (0x05000000u)
 
 static int32_t check_uartx_cfg(allwinner_h6_uart_t * const regs, const ulong usart_clk_rate, const int baudrate)
 {
@@ -359,9 +359,9 @@ int32_t allwinner_uartx_init(void)
 
 	ret  =  _allwinner_h6_serial_init(regs,  clk,  gd->baudrate);
 
-	if ( ret || check_uartx_cfg(regs, clk,  gd->baudrate) ) {
-		// allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_DISABLE,  1);
-		// allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  0);
+	if ( !ret && !check_uartx_cfg(regs, clk,  gd->baudrate) ) {
+		allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_DISABLE,  1);
+		allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  0);
 	}
 
 	return  ret;

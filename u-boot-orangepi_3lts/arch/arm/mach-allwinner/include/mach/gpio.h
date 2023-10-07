@@ -3,12 +3,15 @@
 
 #include  <stdint.h>
 
-#define  GPIO_BASE_ADDR       (0x0300b048u)
+#define  GPIO_BASE_ADDR       (0x0300b000u)
 #define  GPIO_BASE_R_ADDR     (0x07022000u)
 
 enum {
-    GPIOC  =  0,
+    GPIOA  =  0,
+    GPIOB,
+    GPIOC,
     GPIOD,
+    GPIOE,
     GPIOF,
     GPIOG,
     GPIOH,

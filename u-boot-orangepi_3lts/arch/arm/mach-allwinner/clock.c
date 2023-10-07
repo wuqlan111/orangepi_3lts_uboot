@@ -12,8 +12,11 @@ int32_t  uart_clk_init(const uint32_t uart_id)
         return  -1;
     }
 
-    uint32_t  flag  =  (1 << (16 + uart_id))  | (1 << uart_id);
-    setbits_32(CCU_UARTX_GATE_REG,  flag);
+    /*open uartx clock*/
+    setbits_32(CCU_UARTX_GATE_REG,  (1 << uart_id));
+
+    /*de-assert reset */
+    setbits_32(CCU_UARTX_GATE_REG,  (1 << (uart_id + 16)));
     return   0;
 
 }
