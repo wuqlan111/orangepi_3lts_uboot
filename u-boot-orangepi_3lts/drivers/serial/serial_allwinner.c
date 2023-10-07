@@ -60,7 +60,6 @@ typedef  struct {
     ulong  clk_rate;
 }allwinner_h6_uart_priv_t;
 
-#if  defined(CONFIG_DEBUG_UART_ALLWINNER) || !defined(CONFIG_DM_SERIAL) 
 
 static int32_t  _ccu_get_uart_apb2_clk(ulong * clk)
 {
@@ -85,7 +84,7 @@ static int32_t  _ccu_get_uart_apb2_clk(ulong * clk)
 
 }
 
-#endif
+
 
 static int _allwinner_h6_serial_setbrg(allwinner_h6_uart_t * const uart_reg, 
 										const ulong clk_rate, const int baudrate)
@@ -102,7 +101,8 @@ static int _allwinner_h6_serial_setbrg(allwinner_h6_uart_t * const uart_reg,
 	}
 
 	if (clk_rate % tmp_baudrate) {
-		integer_part +=1;
+		ulong tmp2 =  baudrate * (divisor + 1) * (divisor << 5);
+		integer_part  =  clk_rate >= tmp2 ? divisor+1: divisor;
 	}
 
 	if (integer_part > 0xffff) {
@@ -328,6 +328,24 @@ U_BOOT_DRIVER(serial_allwinner) = {
 
 #define ALLWINNER_UART0_BASE   CFG_MXC_UART_BASE
 
+static int32_t check_uartx_cfg(allwinner_h6_uart_t * const regs, const ulong usart_clk_rate, const int baudrate)
+{
+	int32_t  ret  =  0;
+	if ( (usart_clk_rate != 24000000) && (baudrate !=  115200)) {
+		return  -1;
+	}
+
+	setbits_32(&regs->lcr,  ALLWINNER_UART_LCR_DLAB);
+	uint32_t  cfg_div  =  readl(&regs->dll) |  ( readl(&regs->dlh) << 8 );
+	clrbits_32(&regs->lcr,  ALLWINNER_UART_LCR_DLAB);
+
+	ret  = (cfg_div != 13) || (readl(&regs->lcr) != 0x3 ) ? -1:  0;
+
+	return  ret;
+
+}
+
+
 int32_t allwinner_uartx_init(void)
 {
 	int32_t  ret  =  0;
@@ -341,8 +359,9 @@ int32_t allwinner_uartx_init(void)
 
 	ret  =  _allwinner_h6_serial_init(regs,  clk,  gd->baudrate);
 
-	if ( !ret && (readl(&regs->lcr) ==  0x3) ) {
-	
+	if ( ret || check_uartx_cfg(regs, clk,  gd->baudrate) ) {
+		// allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_DISABLE,  1);
+		// allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  0);
 	}
 
 	return  ret;
@@ -401,11 +420,6 @@ void allwinner_uartx_putc(const char c)
 	do {
 		ret = _allwinner_h6_serial_putc(regs,  c);
 	} while (ret == -EAGAIN);
-
-	if (!ret) {
-		allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_DISABLE,  1);
-		allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  0);
-	}
 
 }
 
