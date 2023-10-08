@@ -359,11 +359,6 @@ int32_t allwinner_uartx_init(void)
 
 	ret  =  _allwinner_h6_serial_init(regs,  clk,  gd->baudrate);
 
-	if ( !ret && !check_uartx_cfg(regs, clk,  gd->baudrate) ) {
-		allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_DISABLE,  1);
-		allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  0);
-	}
-
 	return  ret;
 
 }
@@ -431,6 +426,7 @@ static struct serial_device serial_uart0 = {
 	.getc   =  allwinner_uartx_getc,
 	.tstc   =  allwinner_uartx_tstc,
 	.putc   =  allwinner_uartx_putc,
+	.puts   =  default_serial_puts,
 };
 
 
@@ -451,29 +447,6 @@ void allwinner_serial_initialize(void)
 #ifdef CONFIG_DEBUG_UART_ALLWINNER
 
 #define  CCU_BASE_ADDR    0x03000000
-
-// static int32_t  _ccu_get_uart_apb2_clk(ulong * clk)
-// {
-// 	const uint32_t * apb2_reg = (const uint32_t *)0x03000524;
-// 	const uint32_t flag = readl(apb2_reg);
-// 	const uint32_t src_select = (flag >> 24) & 0x3;
-// 	const uint32_t clk_n  =  (flag >> 8) & 0x3;
-// 	const uint32_t clk_m  =  flag & 0x3;
-
-// 	ulong src_rate  =  0;
-// 	if (!src_select) {
-// 		src_rate  =  24000000;
-// 	} else if (src_select == 1) {
-// 		src_rate  =  32768;
-// 	} else {
-// 		return  -1;
-// 	}
-
-// 	*clk =  (src_rate) / ( (1 << clk_n) * (clk_m+1) );
-
-// 	return  0;
-
-// }
 
 static inline void _debug_uart_putc(int ch)
 {

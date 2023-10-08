@@ -99,7 +99,7 @@ void board_init_f(ulong dummy)
     int32_t  ret  =  0;
 
 	allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_DISABLE,  1);
-	allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  1);
+	allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  0);
 
 	set_gpio_pin_func( GPIOH,  0,  2);
 	set_gpio_pin_func( GPIOH,  1,  2);
