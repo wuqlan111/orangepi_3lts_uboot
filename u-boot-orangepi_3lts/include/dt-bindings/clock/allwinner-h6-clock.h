@@ -8,17 +8,17 @@
 #define  ALLWINNER_PLL(module)   ALLWINNER_PLL_##module
 
 // pll clk
-#define  ALLWINNER_PLL_CPUX     0
-#define  ALLWINNER_PLLDDR0      1
-#define  ALLWINNER_PLLPERI0     2
-#define  ALLWINNER_PLLPERI1     3
-#define  ALLWINNER_PLLGPU       4
-#define  ALLWINNER_PLLVIDEO0    5
-#define  ALLWINNER_PLLVIDEO1    6
-#define  ALLWINNER_PLLVE        7
-#define  ALLWINNER_PLLDE        8
-#define  ALLWINNER_PLLHSIC      9
-#define  ALLWINNER_PLLAUDIO     10
+#define  ALLWINNER_PLL_CPUX      0
+#define  ALLWINNER_PLL_DDR0      1
+#define  ALLWINNER_PLL_PERI0     2
+#define  ALLWINNER_PLL_PERI1     3
+#define  ALLWINNER_PLL_GPU       4
+#define  ALLWINNER_PLL_VIDEO0    5
+#define  ALLWINNER_PLL_VIDEO1    6
+#define  ALLWINNER_PLL_VE        7
+#define  ALLWINNER_PLL_DE        8
+#define  ALLWINNER_PLL_HSIC      9
+#define  ALLWINNER_PLL_AUDIO     10
 
 // clk
 #define  ALLWINNER_CLK_CPUX_AXI                  11
@@ -59,6 +59,10 @@
 #define  ALLWINNER_CLK_CSI_MISC                  46
 #define  ALLWINNER_CLK_CSI_TOP                   47
 #define  ALLWINNER_CLK_CSI_MASTER                48
+#define  ALLWINNER_CLK_UART0                     49
+#define  ALLWINNER_CLK_UART1                     50
+#define  ALLWINNER_CLK_UART2                     51
+#define  ALLWINNER_CLK_UART3                     52
 
 #define  ALLWINNER_PLL_MAX         ALLWINNER_PLL_AUDIO
 #define  ALLWINNER_CLK_UARTX       ALLWINNER_CLK_APB2

@@ -1207,6 +1207,33 @@ config ARCH_VF610
 
 config ARCH_ALLWINNER
 	bool "allwinner based platform"
+	select BINMAN
+	select CLK
+	select DM
+	select DM_GPIO
+	select DM_I2C if I2C
+	select DM_SPI if SPI
+	select DM_MMC if MMC
+	select DM_SERIAL
+	select OF_CONTROL
+	select OF_SEPARATE
+	select PINCTRL
+	select SPECIFY_CONSOLE_INDEX
+	select SPL_SEPARATE_BSS if SPL
+	select SPL_STACK_R if SPL
+	select SPL_SYS_MALLOC_SIMPLE if SPL
+	select SPL_USE_TINY_PRINTF
+	select SYS_RELOC_GD_ENV_ADDR
+	imply  FIT
+	imply  SPL_LIBGENERIC_SUPPORT if SPL
+	imply  SPL_LIBCOMMON_SUPPORT  if SPL
+	imply  OF_LIBFDT_OVERLAY
+	imply  PRE_CONSOLE_BUFFER
+	imply  SPL_GPIO if SPL
+	imply  SPL_SERIAL if SPL
+	imply  SPL_MMC  if SPL && MMC
+	imply  WDT
+
 
 config ARCH_ZYNQ
 	bool "Xilinx Zynq based platform"

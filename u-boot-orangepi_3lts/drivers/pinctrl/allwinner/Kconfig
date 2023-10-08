@@ -1,0 +1,13 @@
+
+config PINCTRL_ALLWINNER_H6_V200
+	depends on ARCH_ALLWINNER && H6_V200 && PINCTRL
+	default y
+	bool "Allwinner H6 family pin control driver"
+	help
+	   Support pin multiplexing and pin configuration control on
+	   Allwinner H6 family of SoCs.
+
+
+
+
+

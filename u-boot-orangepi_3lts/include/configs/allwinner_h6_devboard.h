@@ -1,26 +1,35 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-/* nor flash */
-#if defined(CONFIG_MTD_NOR_FLASH)
-#define CFG_SYS_FLASH_BASE		0x00000000
-#define CFG_SYS_FLASH_SIZE		0x04000000	/* 64 MB */
-#define CFG_SYS_FLASH_BANKS_LIST	{ (CFG_SYS_FLASH_BASE) }
-#define CFG_SYS_FLASH_BANKS_SIZES	{ (CFG_SYS_FLASH_SIZE) }
-#endif
 
+// H6-v200 sdram space (0x40000000 - 0xffffffff)
+#define CONFIG_SYS_SDRAM_BASE		(0x40000000u)
 
-#define PHYS_SDRAM_1		0x80000000
-/* Top 48MB reserved for secure world use */
-#define DRAM_SEC_SIZE		0x03000000
-#define PHYS_SDRAM_1_SIZE	0x80000000 - DRAM_SEC_SIZE
-#define CFG_SYS_SDRAM_BASE	PHYS_SDRAM_1
-
-#define PHYS_SDRAM_2		0x8080000000
-#define PHYS_SDRAM_2_SIZE	0x180000000
+/*
+ * spl use sram A1 (0x20000 - 0x27fff) 32KB
+ * 
+ * */
+#define CONFIG_SYS_INIT_RAM_ADDR	CONFIG_H6_V200_SRAM_ADDRESS
+#define CONFIG_SYS_INIT_RAM_SIZE	0x8000 /* 32 KB */
 
 
 
+
+/* UART */
+#define UART0_BASE             (0x05000000u)
+#define UART1_BASE             (0x05000400u)
+#define UART2_BASE             (0x05000800u)
+#define UART3_BASE             (0x05000c00u)
+#define R_UART0_BASE           (0x07080000u)
+#define CFG_MXC_UART_BASE		UART0_BASE
+
+
+/*rtc base addr*/
+#define  ALLWINNER_RTC_BASE_ADDR          (0x07000000u)
+
+
+/*cpu hot flag cfg*/
+#define  ALLWINNER_CPU_HOT_CFG_ADDR           (ALLWINNER_RTC_BASE_ADDR + 0x1b8)
 
 
 #endif

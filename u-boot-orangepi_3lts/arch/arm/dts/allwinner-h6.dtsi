@@ -5,6 +5,9 @@
 #include <dt-bindings/clock/allwinner-h6-clock.h>
 #include <dt-bindings/gpio/allwinner-h6-gpio.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/gpio/allwinner-h6-gpio.h>
+
+#include "allwinner-h6-pinctrl.h"
 
 / {
 	#address-cells = <1>;
@@ -128,14 +131,132 @@
 			reg = <0   0x200000>;
 		};
 
+		gpioc: gpio@0300b048 {
+			compatible = "allwinner,H6-v200-gpio";
+			reg = <0x0300b048 0x24>;
+			ngpios = <ALLWINNER_H6_GPIOC_NUMBER>;
+			gpio-controller;
+			// gpio-ranges = <&pinctrl 0 0 32>;
+			allwinner,gpio-bank-width =  <17>;
+			#gpio-cells = <2>;
+		};
+
+		pinctrlc: pinctrl@0300b048 {
+			compatible = "allwinner,H6-v200-pinctrl";
+			reg = <0x0300b048 0x24>;
+			ngpios = <ALLWINNER_H6_GPIOC_NUMBER>;
+		};
+
+		gpiod: gpio@0300b06c {
+			compatible = "allwinner, H6-v200-gpio";
+			reg = <0x0300b06c 0x24>;
+			ngpios = <ALLWINNER_H6_GPIOD_NUMBER>;
+			gpio-controller;
+			// gpio-ranges = <&pinctrl 0 0 32>;
+			allwinner,gpio-bank-width =  <27>;
+			#gpio-cells = <2>;
+		};
+
+		pinctrld: pinctrl@0300b06c {
+			compatible = "allwinner,H6-v200-pinctrl";
+			reg = <0x0300b06c 0x24>;
+			ngpios = <ALLWINNER_H6_GPIOD_NUMBER>;
+		};
+
+		gpiof: gpio@0300b0b4 {
+			compatible = "allwinner, H6-v200-gpio";
+			reg = <0x0300b0b4   0x24>,  <0x0300b2a0   0x1c>;
+			ngpios = <ALLWINNER_H6_GPIOF_NUMBER>;
+			gpio-controller;
+			// gpio-ranges = <&pinctrl 0 0 32>;
+			allwinner,gpio-bank-width =  <7>;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+
+		pinctrlf: pinctrl@0300b0b4 {
+			compatible = "allwinner,H6-v200-pinctrl";
+			reg = <0x0300b0b4 0x24>;
+			ngpios = <ALLWINNER_H6_GPIOF_NUMBER>;
+		};
+
+		gpiog: gpio@0300b0d8 {
+			compatible = "allwinner, H6-v200-gpio";
+			reg = <0x0300b0d8 0x24>,  <0x0300b2c0   0x1c>;
+			ngpios = <ALLWINNER_H6_GPIOG_NUMBER>;
+			gpio-controller;
+			// gpio-ranges = <&pinctrl 0 0 32>;
+			allwinner,gpio-bank-width =  <15>;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+
+		pinctrlg: pinctrl@0300b0d8 {
+			compatible = "allwinner,H6-v200-pinctrl";
+			reg = <0x0300b0d8 0x24>;
+			ngpios = <ALLWINNER_H6_GPIOG_NUMBER>;
+		};
+
+		gpioh: gpio@0300b0fc {
+			compatible = "allwinner, H6-v200-gpio";
+			reg = <0x0300b0fc 0x24>,  <0x0300b2e0   0x1c>;
+			ngpios = <ALLWINNER_H6_GPIOH_NUMBER>;
+			gpio-controller;
+			// gpio-ranges = <&pinctrl 0 0 32>;
+			allwinner,gpio-bank-width =  <11>;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+
+		pinctrlh: pinctrl@0300b0fc {
+			compatible = "allwinner,H6-v200-pinctrl";
+			reg = <0x0300b0fc 0x24>;
+			ngpios = <ALLWINNER_H6_GPIOH_NUMBER>;
+		};
+
+		gpiol: gpio@07022000 {
+			compatible = "allwinner, H6-v200-gpio";
+			reg = <0x07022000 0x24>,  <0x07022200   0x1c>;
+			ngpios = <ALLWINNER_H6_GPIOL_NUMBER>;
+			gpio-controller;
+			// gpio-ranges = <&pinctrl 0 0 32>;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+
+		pinctrll: pinctrl@07022000 {
+			compatible = "allwinner,H6-v200-gpio";
+			reg = <0x07022000 0x24>;
+			ngpios = <ALLWINNER_H6_GPIOL_NUMBER>;
+		};
+
+		gpiom: gpio@07022024 {
+			compatible = "allwinner, H6-v200-gpio";
+			reg = <0x07022024 0x24>,  <0x07022220   0x1c>;
+			ngpios = <ALLWINNER_H6_GPIOM_NUMBER>;
+			gpio-controller;
+			// gpio-ranges = <&pinctrl 0 0 32>;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+
+		pinctrlm: pinctrl@07022024 {
+			compatible = "allwinner,H6-v200-pinctrl";
+			reg = <0x07022024 0x24>;
+			ngpios = <ALLWINNER_H6_GPIOM_NUMBER>;
+		};
+
 		coreclk: ccu@40023800 {
-			// #reset-cells = <1>;
 			#clock-cells = <1>;
 			compatible = "allwinner,h6-v200-ccu", "allwinner,h6-ccu";
 			reg = <0x03001000  0x1000>;
 			clocks = <&externclk>, <&rcclk>,  <&dxcoclk>;
 		};
-
 
 		nandflashc: nandflash@04011000 {
 			compatible = "allwinner,H6-v200-nand-flash-controller";
