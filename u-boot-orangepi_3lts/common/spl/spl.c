@@ -39,6 +39,7 @@
 #include <fdt_support.h>
 #include <bootcount.h>
 #include <wdt.h>
+#include <log.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 DECLARE_BINMAN_MAGIC_SYM;
@@ -736,6 +737,17 @@ void board_init_f(ulong dummy)
 }
 #endif
 
+#define  printf_spl_image_info(spl_image) {					  \
+	_DBG_PRINTF_LINE();                                    \                  
+	_DBG_PRINTF("spl_image_info -- 0x%p\n", spl_image);     \
+	_DBG_PRINTF("os_type -- %d\n",  (spl_image)->os);           \
+	_DBG_PRINTF("load_addr -- 0x%lx\n",  (spl_image)->load_addr);       \
+	_DBG_PRINTF("entry_point -- 0x%lx\n",  (spl_image)->entry_point);    \
+	_DBG_PRINTF("boot_device -- %u\n",  (spl_image)->boot_device);       \
+	_DBG_PRINTF("size -- %u KB\n",  (spl_image)->size / 1024);           \
+	_DBG_PRINTF("boot_device -- 0x%08x\n",  (spl_image)->flags);         \
+}
+
 void board_init_r(gd_t *dummy1, ulong dummy2)
 {
 	u32 spl_boot_list[] = {
@@ -750,6 +762,7 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
 
 	debug(">>" SPL_TPL_PROMPT "board_init_r()\n");
 
+	_DBG_PRINTF("start spl_set_bd\n");
 	spl_set_bd();
 
 #if defined(CONFIG_SYS_SPL_MALLOC)
@@ -765,6 +778,7 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
 	 * timer_init() does not exist on PPC systems. The timer is initialized
 	 * and enabled (decrementer) in interrupt_init() here.
 	 */
+	_DBG_PRINTF("start timer_init\n");
 	timer_init();
 #endif
 	if (CONFIG_IS_ENABLED(BLOBLIST)) {
@@ -791,6 +805,7 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
 #endif
 
 #if defined(CONFIG_SPL_WATCHDOG) && CONFIG_IS_ENABLED(WDT)
+	_DBG_PRINTF("start initr_watchdog\n");
 	initr_watchdog();
 #endif
 
@@ -815,6 +830,7 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
 	spl_image.boot_device = BOOT_DEVICE_NONE;
 	board_boot_order(spl_boot_list);
 
+	_DBG_PRINTF("start boot_from_devices\n");
 	ret = boot_from_devices(&spl_image, spl_boot_list,
 				ARRAY_SIZE(spl_boot_list));
 	if (ret) {
@@ -840,6 +856,8 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
 			printf("Warning: Failed to finish bloblist (ret=%d)\n",
 			       ret);
 	}
+
+	printf_spl_image_info(&spl_image);
 
 	switch (spl_image.os) {
 	case IH_OS_U_BOOT:
@@ -890,6 +908,8 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
 #endif
 
 	spl_board_prepare_for_boot();
+
+	_DBG_PRINTF("jump_to_image_no_args\n");
 	jump_to_image_no_args(&spl_image);
 }
 

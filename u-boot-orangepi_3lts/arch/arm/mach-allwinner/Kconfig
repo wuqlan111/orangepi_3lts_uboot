@@ -72,4 +72,12 @@ config ALLWINNER_SRAM_ADDRESS
 config SYS_SOC
 	default "allwinner"
 
+config DRAM_CLK
+	int "allwinner dram clock speed"
+	default 744 if H6_V200
+	help
+		Set the dram clock speed, valid range 240 - 480 (prior to sun9i),
+		must be a multiple of 24. For the sun9i (A80), the tested values
+		(for DDR3-1600) are 312 to 792.
+
 endif
