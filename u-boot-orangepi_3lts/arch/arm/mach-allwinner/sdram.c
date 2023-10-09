@@ -33,11 +33,11 @@
  * similar PHY is ZynqMP.
  */
 
-static void mctl_sys_init(dram_para_t *para);
-static void mctl_com_init(dram_para_t *para);
-static void mctl_channel_init(dram_para_t *para);
+static void mctl_sys_init(const dram_para_t * const para);
+static void mctl_com_init(const dram_para_t * const para);
+static void mctl_channel_init(dram_para_t * const para);
 
-static void mctl_core_init(struct dram_para *para)
+static void mctl_core_init(dram_para_t * const para)
 {
 	mctl_sys_init(para);
 	mctl_com_init(para);
@@ -158,8 +158,8 @@ static void mctl_sys_init(const dram_para_t * const para)
 			(sunxi_mctl_ctl_reg_t *)ALLWINNER_H6_DRAM_CTL0_BASE;
 
 	/* Put all DRAM-related blocks to reset state */
-	clrbits_le32(&ccm->mbus_cfg, MBUS_ENABLE | MBUS_RESET);
-	clrbits_le32(&ccm->dram_gate_reset, BIT(0));
+	// clrbits_le32(&ccm->mbus_cfg, MBUS_ENABLE | MBUS_RESET);
+	// clrbits_le32(&ccm->dram_gate_reset, BIT(0));
 	udelay(5);
 	// writel(0, &ccm->dram_gate_reset);
 	// clrbits_le32(&ccm->pll5_cfg, CCM_PLL5_CTRL_EN);
@@ -196,8 +196,8 @@ static void mctl_sys_init(const dram_para_t * const para)
 
 static void mctl_set_addrmap(const dram_para_t * const para)
 {
-	struct sunxi_mctl_ctl_reg * const mctl_ctl =
-			(struct sunxi_mctl_ctl_reg *)ALLWINNER_H6_DRAM_CTL0_BASE;
+	sunxi_mctl_ctl_reg_t * const mctl_ctl =
+			(sunxi_mctl_ctl_reg_t*)ALLWINNER_H6_DRAM_CTL0_BASE;
 	uint8_t cols = para->cols;
 	uint8_t rows = para->rows;
 	uint8_t ranks = para->ranks;
@@ -295,9 +295,9 @@ static void mctl_com_init(const dram_para_t * const para)
 	setbits_le32(&mctl_com->cr, BIT(31));
 
 	/* The bonding ID seems to be always 7. */
-	if (readl(SUNXI_SIDC_BASE + 0x100) == 7)	/* bonding ID */
+	if (readl(ALLWINNER_H6_SIDC_BASE + 0x100) == 7)	/* bonding ID */
 		clrbits_le32(&mctl_com->cr, BIT(27));
-	else if (readl(SUNXI_SIDC_BASE + 0x100) == 3)
+	else if (readl(ALLWINNER_H6_SIDC_BASE + 0x100) == 3)
 		setbits_le32(&mctl_com->cr, BIT(27));
 
 	if (para->clk > 408)
@@ -409,15 +409,15 @@ static void mctl_bit_delay_set(const dram_para_t * const para)
 	}
 }
 
-static void mctl_channel_init(struct dram_para *para)
+static void mctl_channel_init(dram_para_t * const para)
 {
-	struct sunxi_mctl_com_reg * const mctl_com =
-			(struct sunxi_mctl_com_reg *)ALLWINNER_H6_DRAM_COM_BASE;
-	struct sunxi_mctl_ctl_reg * const mctl_ctl =
-			(struct sunxi_mctl_ctl_reg *)ALLWINNER_H6_DRAM_CTL0_BASE;
-	struct sunxi_mctl_phy_reg * const mctl_phy =
-			(struct sunxi_mctl_phy_reg *)ALLWINNER_H6_DRAM_PHY0_BASE;
-	int i;
+	sunxi_mctl_com_reg_t * const mctl_com =
+			(sunxi_mctl_com_reg_t *)ALLWINNER_H6_DRAM_COM_BASE;
+	sunxi_mctl_ctl_reg_t * const mctl_ctl =
+			(sunxi_mctl_ctl_reg_t *)ALLWINNER_H6_DRAM_CTL0_BASE;
+	sunxi_mctl_phy_reg_t * const mctl_phy =
+			(sunxi_mctl_phy_reg_t *)ALLWINNER_H6_DRAM_PHY0_BASE;
+	int32_t i;
 	uint32_t val;
 
 	setbits_le32(&mctl_ctl->dfiupd[0], BIT(31) | BIT(30));
@@ -582,7 +582,7 @@ static void mctl_channel_init(struct dram_para *para)
 	writel(0xffff, &mctl_com->maer2);
 }
 
-static void mctl_auto_detect_dram_size(const dram_para_t * const para)
+static void mctl_auto_detect_dram_size(dram_para_t * const para)
 {
 	/* TODO: non-(LP)DDR3 */
 	/* Detect rank number and half DQ by the code in mctl_channel_init. */

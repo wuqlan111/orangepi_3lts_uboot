@@ -80,4 +80,31 @@ config DRAM_CLK
 		must be a multiple of 24. For the sun9i (A80), the tested values
 		(for DDR3-1600) are 312 to 792.
 
+
+config DRAM_ZQ
+	int "allwinner dram zq value"
+	default 3881979 if H6_V200
+	help
+		Set the dram zq value.
+
+
+config DRAM_ODT_EN
+	bool "allwinner dram odt enable"
+	default y if MACH_SUN50I
+	default y if MACH_SUN50I_H6
+	default y if H6_V200
+	help
+		Select this to enable dram odt (on die termination).
+
+
+config ALLWINNER_DRAM_DDR3
+	bool
+
+config ALLWINNER_DRAM_DDR2
+	bool
+
+config ALLWINNER_DRAM_LPDDR3
+	bool
+
+
 endif

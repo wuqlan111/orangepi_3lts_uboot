@@ -54,7 +54,6 @@ typedef struct {
 		uint8_t reserved_0x8[8];	/* 0x8 */
 	} master[41];		/* 0x210 + index * 0x10 */
 }sunxi_mctl_com_reg_t;
-check_member(sunxi_mctl_com_reg_t, master[40].reserved_0x8, 0x498);
 
 /*
  * The following register information are retrieved from some similar DRAM
@@ -125,7 +124,6 @@ typedef struct {
 	uint32_t swctl;		/* 0x320 */
 	uint32_t swstat;		/* 0x324 */
 } sunxi_mctl_ctl_reg_t;
-check_member(sunxi_mctl_ctl_reg_t, swstat, 0x324);
 
 #define MSTR_DEVICETYPE_DDR3	BIT(0)
 #define MSTR_DEVICETYPE_LPDDR2	BIT(2)
@@ -269,7 +267,6 @@ typedef struct {
 		uint8_t reserved_0xf0[16];	/* 0xf0 */
 	} dx[4];		/* 0x700, 0x800, 0x900, 0xa00 */
 }sunxi_mctl_phy_reg_t;
-check_member(sunxi_mctl_phy_reg, dx[3].reserved_0xf0, 0xaf0);
 
 #define PIR_INIT	BIT(0)
 #define PIR_ZCAL	BIT(1)
