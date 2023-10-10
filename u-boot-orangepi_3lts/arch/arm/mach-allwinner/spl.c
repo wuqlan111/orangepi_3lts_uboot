@@ -9,6 +9,7 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/gpio.h>
 #include <asm/arch/spl.h>
+#include <asm/arch/dram.h>
 #include <log.h>
 
 #include <linux/compiler.h>
@@ -91,6 +92,13 @@ uint32_t spl_boot_device(void)
 
 void __weak allwinner_spl_board_init(void)
 {
+	printf("DRAM:");
+	gd->ram_size = sunxi_dram_init();
+	printf(" %d MiB\n", (int)(gd->ram_size >> 20));
+	if (!gd->ram_size)
+		hang();
+
+	// sunxi_spl_store_dram_size(gd->ram_size);
 
 }
 

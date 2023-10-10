@@ -330,7 +330,7 @@ static inline uint32_t ns_to_t(const uint32_t nanoseconds)
 
 void mctl_set_timing_params(dram_para_t *para);
 
-
+uint64_t sunxi_dram_init(void);
 
 #endif
 
