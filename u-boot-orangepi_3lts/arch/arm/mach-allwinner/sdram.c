@@ -37,6 +37,34 @@ static void mctl_sys_init(const dram_para_t * const para);
 static void mctl_com_init(const dram_para_t * const para);
 static void mctl_channel_init(dram_para_t * const para);
 
+/*
+ * Wait up to 1s for value to be set in given part of reg.
+ */
+void mctl_await_completion(uint32_t * const reg, const uint32_t mask, const uint32_t val)
+{
+	unsigned long tmo = timer_get_us() + 1000000;
+
+	while ((readl(reg) & mask) != val) {
+		if (timer_get_us() > tmo)
+			panic("Timeout initialising DRAM\n");
+	}
+}
+
+/*
+ * Test if memory at offset offset matches memory at begin of DRAM
+ */
+uint32_t mctl_mem_matches(const uint32_t offset)
+{
+	/* Try to write different values to RAM at two addresses */
+	writel(0, CONFIG_SYS_SDRAM_BASE);
+	writel(0xaa55aa55, CONFIG_SYS_SDRAM_BASE + offset);
+	dsb();
+	/* Check if the same value is actually observed when reading back */
+	return readl(CONFIG_SYS_SDRAM_BASE) ==
+	       readl(CONFIG_SYS_SDRAM_BASE + offset);
+}
+
+
 static void mctl_core_init(dram_para_t * const para)
 {
 	mctl_sys_init(para);
@@ -150,34 +178,13 @@ static void mctl_set_master_priority(void)
 
 static void mctl_sys_init(const dram_para_t * const para)
 {
-	// struct sunxi_ccm_reg * const ccm =
-	// 		(struct sunxi_ccm_reg *)SUNXI_CCM_BASE;
+
 	sunxi_mctl_com_reg_t * const mctl_com =
 			(sunxi_mctl_com_reg_t *)ALLWINNER_H6_DRAM_COM_BASE;
 	sunxi_mctl_ctl_reg_t * const mctl_ctl =
 			(sunxi_mctl_ctl_reg_t *)ALLWINNER_H6_DRAM_CTL0_BASE;
 
-	/* Put all DRAM-related blocks to reset state */
-	// clrbits_le32(&ccm->mbus_cfg, MBUS_ENABLE | MBUS_RESET);
-	// clrbits_le32(&ccm->dram_gate_reset, BIT(0));
-	udelay(5);
-	// writel(0, &ccm->dram_gate_reset);
-	// clrbits_le32(&ccm->pll5_cfg, CCM_PLL5_CTRL_EN);
-	// clrbits_le32(&ccm->dram_clk_cfg, DRAM_MOD_RESET);
-
-	udelay(5);
-
-	/* Set PLL5 rate to doubled DRAM clock rate */
-	// writel(CCM_PLL5_CTRL_EN | CCM_PLL5_LOCK_EN |
-	//        CCM_PLL5_CTRL_N(para->clk * 2 / 24 - 1), &ccm->pll5_cfg);
-	// mctl_await_completion(&ccm->pll5_cfg, CCM_PLL5_LOCK, CCM_PLL5_LOCK);
-
-	/* Configure DRAM mod clock */
-	// writel(DRAM_CLK_SRC_PLL5, &ccm->dram_clk_cfg);
-	// setbits_le32(&ccm->dram_clk_cfg, DRAM_CLK_UPDATE);
-	// writel(BIT(RESET_SHIFT), &ccm->dram_gate_reset);
-	// udelay(5);
-	// setbits_le32(&ccm->dram_gate_reset, BIT(0));
+	dram_clk_init(para->clk);
 
 	/* Disable all channels */
 	writel(0, &mctl_com->maer0);
@@ -185,9 +192,9 @@ static void mctl_sys_init(const dram_para_t * const para)
 	writel(0, &mctl_com->maer2);
 
 	/* Configure MBUS and enable DRAM mod reset */
-	// setbits_le32(&ccm->mbus_cfg, MBUS_RESET);
-	// setbits_le32(&ccm->mbus_cfg, MBUS_ENABLE);
-	// setbits_le32(&ccm->dram_clk_cfg, DRAM_MOD_RESET);
+	setbits_32(CCU_MBUS_CLK_REG, BIT(30));
+	setbits_32(CCU_MBUS_CLK_REG, BIT(31));
+	setbits_32(CCU_DRAM_CLK_REG, BIT(30));
 	udelay(5);
 
 	/* Unknown hack from the BSP, which enables access of mctl_ctl regs */

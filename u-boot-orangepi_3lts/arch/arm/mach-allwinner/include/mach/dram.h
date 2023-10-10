@@ -53,7 +53,7 @@ typedef struct {
 		uint32_t cfg1;		/* 0x4 */
 		uint8_t reserved_0x8[8];	/* 0x8 */
 	} master[41];		/* 0x210 + index * 0x10 */
-}sunxi_mctl_com_reg_t;
+} __attribute__ ((packed)) sunxi_mctl_com_reg_t;
 
 /*
  * The following register information are retrieved from some similar DRAM
@@ -123,7 +123,7 @@ typedef struct {
 	uint8_t reserved_0x314[12];	/* 0x314 */
 	uint32_t swctl;		/* 0x320 */
 	uint32_t swstat;		/* 0x324 */
-} sunxi_mctl_ctl_reg_t;
+} __attribute__ ((packed)) sunxi_mctl_ctl_reg_t;
 
 #define MSTR_DEVICETYPE_DDR3	BIT(0)
 #define MSTR_DEVICETYPE_LPDDR2	BIT(2)
@@ -266,7 +266,7 @@ typedef struct {
 		uint32_t gsr[4];		/* 0xe0 */
 		uint8_t reserved_0xf0[16];	/* 0xf0 */
 	} dx[4];		/* 0x700, 0x800, 0x900, 0xa00 */
-}sunxi_mctl_phy_reg_t;
+} __attribute__ ((packed)) sunxi_mctl_phy_reg_t;
 
 #define PIR_INIT	BIT(0)
 #define PIR_ZCAL	BIT(1)
@@ -318,7 +318,7 @@ typedef struct {
 	uint8_t bus_full_width;
 	const uint8_t dx_read_delays[NR_OF_BYTE_LANES][RD_LINES_PER_BYTE_LANE];
 	const uint8_t dx_write_delays[NR_OF_BYTE_LANES][WR_LINES_PER_BYTE_LANE];
-}dram_para_t;
+} __attribute__ ((packed)) dram_para_t;
 
 
 static inline uint32_t ns_to_t(const uint32_t nanoseconds)
