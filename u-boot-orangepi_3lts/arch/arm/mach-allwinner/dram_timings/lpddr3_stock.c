@@ -2,10 +2,10 @@
 #include <asm/arch/dram.h>
 #include <asm/arch/cpu.h>
 
-void mctl_set_timing_params(uint16_t socid, struct dram_para *para)
+void mctl_set_timing_params(uint16_t socid, dram_para_t *para)
 {
-	struct sunxi_mctl_ctl_reg * const mctl_ctl =
-			(struct sunxi_mctl_ctl_reg *)SUNXI_DRAM_CTL0_BASE;
+	sunxi_mctl_ctl_reg_t * const mctl_ctl =
+			(sunxi_mctl_ctl_reg_t *)SUNXI_DRAM_CTL0_BASE;
 
 	u8 tccd		= 2;
 	u8 tfaw		= max(ns_to_t(50), 4);
