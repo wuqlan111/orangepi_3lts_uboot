@@ -9,6 +9,7 @@
 #include <common.h>
 #include <asm/arch/dram.h>
 #include <asm/arch/cpu.h>
+#include <asm/io.h>
 
 static u32 mr_lpddr3[12] = {
 	0x00000000, 0x00000043, 0x0000001a, 0x00000001,
@@ -20,9 +21,9 @@ static u32 mr_lpddr3[12] = {
 void mctl_set_timing_params(dram_para_t *para)
 {
 	sunxi_mctl_ctl_reg_t * const mctl_ctl =
-			(sunxi_mctl_ctl_reg_t *)SUNXI_DRAM_CTL0_BASE;
+			(sunxi_mctl_ctl_reg_t *)ALLWINNER_H6_DRAM_CTL0_BASE;
 	sunxi_mctl_phy_reg_t * const mctl_phy =
-			(sunxi_mctl_phy_reg_t *)SUNXI_DRAM_PHY0_BASE;
+			(sunxi_mctl_phy_reg_t *)ALLWINNER_H6_DRAM_PHY0_BASE;
 	int i;
 
 	u8 tccd		= 2;

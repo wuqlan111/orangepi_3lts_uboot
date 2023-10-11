@@ -6,8 +6,7 @@ config H6_V200
 	select ARMV8_SET_SMPEN
 	select MISC
 	select SUPPORT_SPL
-	select ALLWINNER_DRAM_DW
-	select ALLWINNER_DRAM_DW_32BIT
+	select DRAM_ALLWINNER_H6
 	imply  SPL_TIMER if SPL
 	imply  SPL_LOAD_FIT  if SPL
 	imply  SPL_FRAMEWORK  if SPL
@@ -98,6 +97,10 @@ config DRAM_ODT_EN
 	help
 		Select this to enable dram odt (on die termination).
 
+config DRAM_ALLWINNER_H6
+	bool
+	help
+	  Select this dram controller driver for some Allwinner H6 platforms.
 
 config ALLWINNER_DRAM_DW
 	bool

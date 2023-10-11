@@ -8,6 +8,7 @@ obj-y   +=  cpu_info.o
 ifneq ($(CONFIG_SPL_BUILD),)
 obj-y	+=  spl.o
 obj-$(CONFIG_ALLWINNER_DRAM_DW)	+= dram_timings/
+obj-$(CONFIG_DRAM_ALLWINNER_H6)	+= dram_timings/
 endif
 
 

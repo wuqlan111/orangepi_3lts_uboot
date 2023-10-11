@@ -41,9 +41,9 @@ static u32 mr_ddr3[7] = {
 void mctl_set_timing_params(dram_para_t *para)
 {
 	sunxi_mctl_ctl_reg_t * const mctl_ctl =
-			(sunxi_mctl_ctl_reg_t*)SUNXI_DRAM_CTL0_BASE;
+			(sunxi_mctl_ctl_reg_t*)ALLWINNER_H6_DRAM_CTL0_BASE;
 	sunxi_mctl_phy_reg_t * const mctl_phy =
-			(sunxi_mctl_phy_reg_t *)SUNXI_DRAM_PHY0_BASE;
+			(sunxi_mctl_phy_reg_t *)ALLWINNER_H6_DRAM_PHY0_BASE;
 	int i;
 
 	u8 tccd		= 2;			/* JEDEC: 4nCK */
