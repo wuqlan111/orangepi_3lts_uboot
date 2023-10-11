@@ -92,9 +92,8 @@ uint32_t spl_boot_device(void)
 
 void __weak allwinner_spl_board_init(void)
 {
-	printf("DRAM:");
 	gd->ram_size = sunxi_dram_init();
-	printf(" %d MiB\n", (int)(gd->ram_size >> 20));
+	_DBG_PRINTF("DRAM:\t%lu MB\n", gd->ram_size >> 20);
 	if (!gd->ram_size)
 		hang();
 

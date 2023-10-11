@@ -13,6 +13,7 @@
 #include <asm/arch/cpu.h>
 #include <linux/bitops.h>
 #include <linux/kconfig.h>
+#include <log.h>
 
 /*
  * The DRAM controller structure on H6 is similar to the ones on A23/A80:
@@ -678,14 +679,18 @@ uint64_t sunxi_dram_init(void)
 	setbits_le32(0x7010310, BIT(8));
 	clrbits_le32(0x7010318, 0x3f);
 
+	_DBG_PRINTF("mctl_auto_detect_dram_size\n");
 	mctl_auto_detect_dram_size(&para);
 
+	_DBG_PRINTF("mctl_core_init\n");
 	mctl_core_init(&para);
 
+	_DBG_PRINTF("mctl_calc_size\n");
 	size = mctl_calc_size(&para);
 
 	clrsetbits_le32(&mctl_com->cr, 0xf0, (size >> (10 + 10 + 4)) & 0xf0);
 
+	_DBG_PRINTF("mctl_set_master_priority\n");
 	mctl_set_master_priority();
 
 	return size;
