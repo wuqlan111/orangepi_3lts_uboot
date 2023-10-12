@@ -662,11 +662,11 @@ uint64_t sunxi_dram_init(void)
 		.cols = 11,
 		.rows = 14,
 		.bus_full_width = 1,
-#ifdef CONFIG_ALLWINNER_H6_DRAM_LPDDR3
+#ifdef CONFIG_ALLWINNER_DRAM_H6_LPDDR3
 		.type = SUNXI_DRAM_TYPE_LPDDR3,
 		.dx_read_delays  = ALLWINNER_H6_LPDDR3_DX_READ_DELAYS,
 		.dx_write_delays = ALLWINNER_H6_LPDDR3_DX_WRITE_DELAYS,
-#elif defined(CONFIG_ALLWINNER_H6_DDR3_1333)
+#elif defined(CONFIG_ALLWINNER_DRAM_H6_DDR3_1333)
 		.type = SUNXI_DRAM_TYPE_DDR3,
 		.dx_read_delays  = ALLWINNER_H6_DDR3_DX_READ_DELAYS,
 		.dx_write_delays = ALLWINNER_H6_DDR3_DX_WRITE_DELAYS,

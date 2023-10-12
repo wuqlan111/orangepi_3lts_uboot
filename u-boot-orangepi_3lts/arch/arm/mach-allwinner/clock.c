@@ -29,11 +29,7 @@ int32_t  wait_reg32_flag(uint32_t addr, uint32_t mask, uint32_t val, uint32_t ti
 	const uint32_t timeout_vld  =  timeout ? 1:  0;
 	const uint32_t val_mask  =  mask & val;
 
-	do {
-
-		if (readl(addr) & mask ==  val_mask) {
-			break;
-		} 
+	while ( (readl(addr) & mask) !=  val_mask) {
 
 		if (timeout_vld && !timeout) {
 			ret  =  -1;
@@ -44,7 +40,7 @@ int32_t  wait_reg32_flag(uint32_t addr, uint32_t mask, uint32_t val, uint32_t ti
 			timeout--;
 		}
 
-	} while (1);
+	}
 
 	return  ret;
 
