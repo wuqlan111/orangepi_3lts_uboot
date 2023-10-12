@@ -111,11 +111,12 @@ int32_t  mmc_clk_init(const uint32_t smhc,  const uint32_t clk)
 	int32_t  ret =  0;
 	const  uint32_t reg  =  CCU_SMHCX_CLK_REG(smhc);
 	if (smhc > CCU_SMHCX_MAX_ID ) {
+		_DBG_PRINTF("smhc [%u] invalid!\n", smhc);
 		return  -1;
 	}
 
-	clrbits_32(CCU_SMHCX_GATE_REG,  BIT(smhc));
-	clrbits_32(CCU_SMHCX_GATE_REG,  BIT(smhc+16));
+	setbits_32(CCU_SMHCX_GATE_REG,  BIT(smhc));
+	setbits_32(CCU_SMHCX_GATE_REG,  BIT(smhc+16));
 	clrbits_32(reg,  BIT(31));
 
 	uint64_t  peri0_4x,   peri1_4x, peri0_2x,  peri1_2x;
@@ -163,8 +164,6 @@ int32_t  mmc_clk_init(const uint32_t smhc,  const uint32_t clk)
 	}
 
 	writel( BIT(31) | (best_idx << 24) | (best_n << 8) | best_m, reg );
-	setbits_32(CCU_SMHCX_GATE_REG,  BIT(smhc));
-	setbits_32(CCU_SMHCX_GATE_REG,  BIT(smhc+16));
 
 	return  0;
 

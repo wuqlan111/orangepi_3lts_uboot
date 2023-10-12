@@ -13,6 +13,7 @@
 /*init board mmc gpio*/
 int32_t board_mmc_init(struct bd_info *bis)
 {
+    int32_t  ret  =  0;
     _DBG_PRINTF("board_mmc_init\n");
 
     for (int32_t i  =  0; i < 6; i++) {
@@ -21,7 +22,9 @@ int32_t board_mmc_init(struct bd_info *bis)
         set_gpio_pin_drive(GPIOF,  i,  GPIO_DRIVE_LEVEL2);
     }
 
-	return  0;
+    ret  =  mmc_clk_init(CCU_SMHC0_ID, 24000000);
+
+	return  ret;
 }
 
 
