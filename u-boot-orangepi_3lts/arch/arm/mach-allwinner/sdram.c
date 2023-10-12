@@ -140,7 +140,7 @@ inline void mbus_configure_port(const uint8_t port,
 			   | (bwl0 << 16) );
 	const uint32_t cfg1 = ((uint32_t)bwl2 << 16) | (bwl1 & 0xffff);
 
-	_DBG_PRINTF("MBUS port %d cfg0 %08x cfg1 %08x\n", port, cfg0, cfg1);
+	debug("MBUS port %d cfg0 %08x cfg1 %08x\n", port, cfg0, cfg1);
 	writel(cfg0, &mctl_com->master[port].cfg0);
 	writel(cfg1, &mctl_com->master[port].cfg1);
 }

@@ -7,9 +7,21 @@
 #include  <asm/arch/cpu.h>
 
 
+
+#define  CCU_PLL_SRC_RATE               (24000000ul)
+#define  CCU_PLL_CLK_ENABLE             BIT(31)
+#define  CCU_PLL_LOCK_ENABLE            BIT(29)
+#define  CCU_PLL_CLK_LOCKED             BIT(28)
+#define  CCU_PLL_FACTOR_N               GENMASK(15,  8)
+
+
+
+
+
 /*ccu apbx clk cfg*/
 #define  CCU_APBX_CFG(n)    (ALLWINNER_H6_CCU_BASE + 0x520 + (n) * 4)
 
+#define  CCU_PERIX_PLL_REG(n)    (ALLWINNER_H6_CCU_BASE + 0x20 + (n) * 8)
 
 #define CCU_DRAM_PLL_REG      (ALLWINNER_H6_CCU_BASE + 0x10)
 #define CCU_DRAM_CLK_REG      (ALLWINNER_H6_CCU_BASE + 0x800)
@@ -34,6 +46,17 @@
 #define  CCU_UART1_ID              1
 #define  CCU_UART2_ID              2
 #define  CCU_UART3_ID              3
+
+
+/*uart clk gate reg*/
+#define  CCU_SMHCX_CLK_REG(n)       (ALLWINNER_H6_CCU_BASE + 0x830 + (n) * 4)
+#define  CCU_SMHCX_GATE_REG         (ALLWINNER_H6_CCU_BASE + 0x84c)
+#define  CCU_SMHC0_ID         0
+#define  CCU_SMHC1_ID         1
+#define  CCU_SMHC2_ID         2
+#define  CCU_SMHCX_MAX_ID      CCU_SMHC2_ID
+
+
 
 int32_t  uart_clk_init(const uint32_t uart_id);
 

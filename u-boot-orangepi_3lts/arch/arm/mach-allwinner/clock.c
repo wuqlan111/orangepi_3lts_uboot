@@ -6,6 +6,28 @@
 #include <log.h>
 
 
+int32_t  ccu_get_pll_perix_clk(const uint32_t is_peri0, uint64_t * rate)
+{
+	const uint32_t addr = is_peri0? CCU_PERIX_PLL_REG(0): CCU_PERIX_PLL_REG(1);
+	const uint32_t flag  =  readl(addr);
+
+	if (!rate || !(flag & CCU_PLL_CLK_ENABLE)) {
+		return  -1;
+	}
+
+	uint32_t pll_n   =  (flag & CCU_PLL_FACTOR_N) >> 8;
+	uint32_t pll_m0  =  flag & BIT(0);
+	uint32_t pll_m1  =  (flag & BIT(1)) >> 1;
+	uint32_t tmp_m  =  (pll_m0 + 1) * (pll_m1);
+
+	*rate  =  CCU_PLL_SRC_RATE * (pll_n + 1) / tmp_m;
+
+	_DBG_PRINTF("%s rate -- %lu Hz\n",  *rate);
+
+	return   0;
+
+}
+
 
 int32_t  uart_clk_init(const uint32_t uart_id)
 {
@@ -84,6 +106,68 @@ int32_t  dram_clk_init(const uint32_t clock)
 }
 
 
+int32_t  mmc_clk_init(const uint32_t smhc,  const uint32_t clk)
+{
+	int32_t  ret =  0;
+	const  uint32_t reg  =  CCU_SMHCX_CLK_REG(smhc);
+	if (smhc > CCU_SMHCX_MAX_ID ) {
+		return  -1;
+	}
 
+	clrbits_32(CCU_SMHCX_GATE_REG,  BIT(smhc));
+	clrbits_32(CCU_SMHCX_GATE_REG,  BIT(smhc+16));
+	clrbits_32(reg,  BIT(31));
+
+	uint64_t  peri0_4x,   peri1_4x, peri0_2x,  peri1_2x;
+	uint8_t   peri0_vld,  peri1_vld;
+
+	peri0_4x  =  peri0_2x =  peri1_4x = peri1_2x = 0;
+	peri0_vld  =  peri1_vld  =  0;
+
+	if (!ccu_get_pll_perix_clk(0, &peri0_4x)) {
+		peri0_vld =  1;
+		peri0_2x  =  peri0_4x >> 1;
+	}
+
+	if (!ccu_get_pll_perix_clk(0, &peri1_4x)) {
+		peri0_vld =  1;
+		peri1_2x  =  peri1_4x >> 1;
+	}
+
+	const uint8_t  src_vld[3]  = { 1, peri0_vld,  peri1_vld };
+	const uint64_t src_rate[3] = { CCU_PLL_SRC_RATE,   peri0_2x,  peri1_2x  };
+
+	uint8_t  best_idx, best_n, best_m;
+	uint64_t  delta  =  clk;
+
+	for (int32_t tmp_idx =  0; (tmp_idx < 3) && (src_vld[tmp_idx]); tmp_idx++) {
+		for (int32_t tmp_n =  0; tmp_n < 4; tmp_n++) {
+			uint32_t factor_n  =  1 << tmp_n;
+			for (int32_t tmp_m =  0; tmp_m < 16; tmp_m++) {
+				uint64_t tmp_rate = src_rate[tmp_idx] / (factor_n * (tmp_m + 1));
+				uint64_t tmp_delta = tmp_rate > clk ? tmp_rate - clk: clk - tmp_rate;
+
+				if (tmp_delta < delta) {
+					best_idx = tmp_idx;
+					best_n   =  tmp_n;
+					best_m   =  tmp_m;
+					delta  =  tmp_delta;
+				}
+
+				if (tmp_delta == 0) {
+					break;
+				}
+
+			}
+		}
+	}
+
+	writel( BIT(31) | (best_idx << 24) | (best_n << 8) | best_m, reg );
+	setbits_32(CCU_SMHCX_GATE_REG,  BIT(smhc));
+	setbits_32(CCU_SMHCX_GATE_REG,  BIT(smhc+16));
+
+	return  0;
+
+}
 
 
