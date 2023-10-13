@@ -67,6 +67,8 @@ typedef  struct {
 
 typedef  struct {
 	fdt_addr_t   base;
+	uint32_t  sd_idx;
+	struct mmc_config cfg;
 } allwinner_h6_smhc_priv_t;
 
 typedef enum {
@@ -148,6 +150,26 @@ static int32_t allwinner_smhc_poll_read_write(allwinner_h6_smhc_t * const smhc,
 
 }
 
+static int32_t allwiner_smhc_set_ios_common(allwinner_h6_smhc_t * const smhc,
+				    struct mmc *mmc)
+{
+	/* Change clock first */
+	// if (mmc->clock && mmc_config_clock(priv, mmc) != 0) {
+	// 	return -EINVAL;
+	// }
+
+	/* Change bus width */
+	if (mmc->bus_width == 8) {
+		writel(0x2, &smhc->ctype);		
+	} else if (mmc->bus_width == 4) {
+		writel(0x1, &smhc->ctype);		
+	} else {
+		writel(0x0, &smhc->ctype);		
+	}
+
+	return 0;
+}
+
 
 static int32_t allwiner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, struct mmc *mmc,
 				 struct mmc_cmd *cmd, struct mmc_data *data)
@@ -222,6 +244,119 @@ static int32_t allwiner_smhc_wait_dat0_common(allwinner_h6_smhc_t * const smhc, 
 
 
 
+
+
+
+
+#if !CONFIG_IS_ENABLED(DM_MMC)
+
+static allwinner_h6_smhc_priv_t mmc_priv[CCU_SMHCX_MAX_ID+1];
+static const char * const mmc_name[CCU_SMHCX_MAX_ID+1] = {
+	"SMHC0",
+	"SMHC1",
+	"SMHC2",
+};
+
+static int sunxi_mmc_set_ios_legacy(struct mmc *mmc)
+{
+	allwinner_h6_smhc_priv_t * priv =  (allwinner_h6_smhc_priv_t *)mmc->priv;
+	allwinner_h6_smhc_t * regs = (allwinner_h6_smhc_t *)priv->base;
+
+	return  allwiner_smhc_set_ios_common(regs, mmc);
+}
+
+static int allwinner_mmc_send_cmd_legacy(struct mmc *mmc, struct mmc_cmd *cmd,
+				     struct mmc_data *data)
+{
+	allwinner_h6_smhc_priv_t * priv =  (allwinner_h6_smhc_priv_t *)mmc->priv;
+	allwinner_h6_smhc_t * regs = (allwinner_h6_smhc_t *)priv->base;
+	return allwiner_smhc_send_cmd_common(regs, mmc, cmd, data);
+}
+
+static int32_t allwinner_mmc_core_init(struct mmc *mmc)
+{
+	allwinner_h6_smhc_priv_t * priv =  (allwinner_h6_smhc_priv_t *)mmc->priv;
+	allwinner_h6_smhc_t * regs = (allwinner_h6_smhc_t *)priv->base;
+
+	/* Reset controller */
+	writel( BIT(8) | BIT(0), &regs->ctrl);
+	udelay(1000);
+
+	return 0;
+}
+
+static const struct mmc_ops allwinner_mmc_ops = {
+	.send_cmd	=  allwinner_mmc_send_cmd_legacy,
+	.set_ios	=  allwinner_mmc_set_ios_legacy,
+	.init		=  allwinner_mmc_core_init,
+};
+
+static int32_t init_mmc_priv(const uint32_t sd_idx)
+{
+	if (sd_idx > CCU_SMHCX_MAX_ID) {
+		return  -1;
+	}
+
+	memset(&mmc_priv[sd_idx],  0, sizeof(allwinner_h6_smhc_priv_t));
+	mmc_priv[sd_idx].base  =  ALLWINNER_H6_SMHCX_REG(sd_idx);
+	mmc_priv[sd_idx].sd_idx  =  sd_idx;
+	struct mmc_config * cfg =  &mmc_priv[sd_idx].cfg;
+
+	cfg->name  =  mmc_name[sd_idx];
+	cfg->ops  =  &allwinner_mmc_ops;
+
+	switch (sd_idx) {
+		CCU_SMHC0_ID:
+			cfg->caps = MMC_MODE_4BIT | MMC_MODE_HS_52MHz | MMC_MODE_HS;
+			cfg->voltages  =  MMC_VDD_32_33;
+			break;
+
+		CCU_SMHC1_ID:
+			cfg->caps = MMC_MODE_4BIT | MMC_MODE_HS_52MHz | MMC_MODE_HS;
+			cfg->voltages  =  MMC_VDD_32_33 | MMC_VDD_165_195;
+			break;
+
+
+		CCU_SMHC2_ID:
+			cfg->caps = MMC_MODE_4BIT | MMC_MODE_8BIT | MMC_MODE_HS_52MHz | MMC_MODE_HS;
+			cfg->voltages  =  MMC_VDD_32_33 | MMC_VDD_165_195;
+			break;
+	}
+
+	cfg->f_min = 400000;
+	cfg->f_max = 52000000;
+
+	return  0;
+
+}
+
+
+//初始化mmc设备
+struct mmc * allwinner_mmc_init(int32_t sd_idx)
+{
+	struct mmc_config * cfg =  &mmc_priv[sd_idx].cfg;
+	if ((sd_idx > CCU_SMHCX_MAX_ID)  || (sd_idx < 0)) {
+		return  NULL;
+	}
+
+	memset(&mmc_priv[sd_idx],  0, sizeof(allwinner_h6_smhc_priv_t));
+
+	if (init_mmc_priv(sd_idx)) {
+		return  NULL;
+	}
+
+	if (mmc_clk_init(sd_idx,  24000000)) {
+		return NULL;
+	}
+	
+	return  mmc_create(cfg, &mmc_priv[sd_idx]);
+}
+
+
+
+#else
+
+
 static int32_t allwinner_h6_send_cmd(struct udevice *dev, struct mmc_cmd *cmd,
 			      struct mmc_data *data)
 {
@@ -229,6 +364,14 @@ static int32_t allwinner_h6_send_cmd(struct udevice *dev, struct mmc_cmd *cmd,
 	allwinner_h6_smhc_priv_t * priv = dev_get_priv(dev);
 
 	return allwiner_smhc_send_cmd_common(priv->base, &plat->mmc, cmd, data);
+}
+
+static int32_t allwinner_h6_set_ios(struct udevice *dev)
+{
+	allwinner_h6_smhc_plat_t * plat = dev_get_plat(dev);
+	allwinner_h6_smhc_priv_t * priv = dev_get_priv(dev);
+
+	return allwiner_smhc_set_ios_common(priv->base, &plat->mmc);
 }
 
 static int32_t allwinner_h6_get_cd(struct udevice *dev)
@@ -248,7 +391,6 @@ static int32_t allwinner_h6_wait_data0(struct udevice *dev, int32_t state,
 	return  allwiner_smhc_wait_dat0_common(priv->base,  state, timeout_us);
 }
 
-
 static const struct udevice_id allwinner_h6_smhc_match[] = {
 	{ .compatible = "allwinner, h6-v200-smhc" },
 	{ }
@@ -257,7 +399,7 @@ static const struct udevice_id allwinner_h6_smhc_match[] = {
 static const struct dm_mmc_ops allwinner_h6_smhc_ops = {
 	// .reinit  =  ,
 	.send_cmd = allwinner_h6_send_cmd,
-	// .set_ios = allwinner_h6_set_ios,
+	.set_ios = allwinner_h6_set_ios,
 	.get_cd  =  allwinner_h6_get_cd,
 	.wait_data0 = allwinner_h6_wait_data0,
 
@@ -296,5 +438,8 @@ U_BOOT_DRIVER(allwinner_h6_smhc) = {
 	.plat_auto	= sizeof(allwinner_h6_smhc_plat_t),
 	.ops = &allwinner_smhc_ops,
 };
+
+
+#endif
 
 
