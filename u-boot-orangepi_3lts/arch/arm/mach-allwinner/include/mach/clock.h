@@ -62,8 +62,6 @@ int32_t  uart_clk_init(const uint32_t uart_id);
 
 int32_t  dram_clk_init(const uint32_t clock);
 
-int32_t  wait_reg32_flag(uint32_t addr, uint32_t mask, uint32_t val, uint32_t timeout);
-
 int32_t  mmc_clk_init(const uint32_t smhc,  const uint32_t clk);
 
 #endif

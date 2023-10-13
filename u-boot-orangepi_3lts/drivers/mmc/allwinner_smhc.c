@@ -131,20 +131,25 @@ static int32_t allwinner_smhc_poll_read_write(allwinner_h6_smhc_t * const smhc,
 				struct mmc_data *data)
 {
 	int32_t  ret  =  0;
+	const uint32_t  times  =  (data->blocksize * data->blocks) >> 2;
+	const uint32_t  is_write  =  data->flags & MMC_DATA_READ? 0:  1;
+	const uint32_t wait_mask = is_write ? BIT(3):  BIT(2);
+	const uint32_t wait_bit  = 0;
+	uint32_t * const buffer = (uint32_t *)(is_write ? data->src : data->dest );
 
-	if (data->flags & MMC_DATA_READ) {
+	for (uint32_t i  =  0; i < times; i++) {
+		if (wait_reg32_flag(&smhc->status, wait_mask, wait_bit, 60000)) {
+			ret =  -1;
+			break;
+		}
 
-
-
-
-	} else {
-
-
-
-
+		if (is_write) {
+			writel(buffer[i], &smhc->fifo);
+		} else {
+			buffer[i]  =  readl(&smhc->fifo);
+		}
 
 	}
-
 
 	return  ret;
 
@@ -185,9 +190,9 @@ static int32_t allwiner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, s
 	writel(cmd_flag,  &smhc->cmd);
 
 	if (!data && (cmd->resp_type & MMC_RSP_BUSY)) {
-		uint32_t timeout = 6000;
+		uint32_t timeout = 600;
 
-		/* Poll on DATA0 line for cmd with busy signal for 600 ms */
+		/* Poll on DATA0 line for cmd with busy signal for 60 ms */
 		while ( (timeout > 0) && (readl(&smhc->status) 
 					& ALLWINNER_SMHC_STATUS_CARD_BUSY) ) {
 			udelay(100);

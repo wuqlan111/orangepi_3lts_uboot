@@ -2,6 +2,7 @@
 #include <asm/io.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/gpio.h>
+#include <asm/arch/cpu.h>
 #include <linux/delay.h>
 #include <log.h>
 
