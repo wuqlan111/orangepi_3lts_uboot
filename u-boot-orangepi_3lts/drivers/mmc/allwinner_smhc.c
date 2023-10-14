@@ -195,31 +195,38 @@ static int32_t allwinner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, 
 	uint32_t  cmd_flag  =  allwinner_get_commond_flag(cmd, data);
 	if (data) {
 		writel(data->blocksize,  &smhc->blksiz);
-		writel(data->blocks * data->blocksize, &priv->reg->bytecnt);
+		writel(data->blocks * data->blocksize, &smhc->bycnt);
 	}
 	writel(cmd->cmdarg,  &smhc->cmdarg);
 	writel(cmd_flag,  &smhc->cmd);
-
-	if (!data && (cmd->resp_type & MMC_RSP_BUSY)) {
-		uint32_t timeout = 600;
-
-		/* Poll on DATA0 line for cmd with busy signal for 60 ms */
-		while ( (timeout > 0) && (readl(&smhc->status) 
-					& ALLWINNER_SMHC_STATUS_CARD_BUSY) ) {
-			udelay(100);
-			timeout--;
-		}
-
-		if (timeout <= 0) {
-			log_err("Timeout waiting for DAT0 to go high!\n");
-			ret = -ETIMEDOUT;
-			goto   error;
+	if (data) {
+		ret  =  allwinner_smhc_poll_read_write(smhc,  data);
+		if (ret) {
+			_DBG_PRINTF("poll transfer data failed!\n");
 		}
 	}
+
+	// if (!data && (cmd->resp_type & MMC_RSP_BUSY)) {
+	// 	uint32_t timeout = 600;
+
+	// 	/* Poll on DATA0 line for cmd with busy signal for 60 ms */
+	// 	while ( (timeout > 0) && (readl(&smhc->status) 
+	// 				& ALLWINNER_SMHC_STATUS_CARD_BUSY) ) {
+	// 		udelay(100);
+	// 		timeout--;
+	// 	}
+
+	// 	if (timeout <= 0) {
+	// 		log_err("Timeout waiting for DAT0 to go high!\n");
+	// 		ret = -ETIMEDOUT;
+	// 		goto   error;
+	// 	}
+	// }
 
 	ret  =  wait_reg32_flag(&smhc->rinsts,  ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE, 
 					ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE, 6000);
 	if (ret) {
+		_DBG_PRINTF("wait cmd complete failed,\trinsts = 0x%08x!\n", readl(&smhc->rinsts));
 		goto error;
 	}
 
@@ -227,6 +234,7 @@ static int32_t allwinner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, 
 		ret  =  wait_reg32_flag(&smhc->rinsts,  ALLWINNER_SMHC_RINTSTS_AUTO_COMPLETE, 
 					ALLWINNER_SMHC_RINTSTS_AUTO_COMPLETE, 6000);
 		if (ret) {
+			_DBG_PRINTF("wait auto complete failed,\trinsts = 0x%08x!\n", readl(&smhc->rinsts));
 			goto error;
 		}
 	}
@@ -242,10 +250,6 @@ static int32_t allwinner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, 
 		}
 	} else {
 		cmd->response[0]  =  readl(&smhc->respx[0]);
-	}
-
-	if (data) {
-		ret  =  allwinner_smhc_poll_read_write(smhc,  data);
 	}
 
 error:
