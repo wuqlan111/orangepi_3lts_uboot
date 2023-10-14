@@ -738,7 +738,7 @@ void board_init_f(ulong dummy)
 #endif
 
 #define  printf_spl_image_info(spl_image) {					  \
-	_DBG_PRINTF_LINE();                                    \                  
+	_DBG_PRINTF_LINE();                                    \
 	_DBG_PRINTF("spl_image_info -- 0x%p\n", spl_image);     \
 	_DBG_PRINTF("os_type -- %d\n",  (spl_image)->os);           \
 	_DBG_PRINTF("load_addr -- 0x%lx\n",  (spl_image)->load_addr);       \

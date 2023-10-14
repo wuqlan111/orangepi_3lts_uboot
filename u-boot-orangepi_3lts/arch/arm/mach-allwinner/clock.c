@@ -166,6 +166,9 @@ int32_t  mmc_clk_init(const uint32_t smhc,  const uint32_t clk)
 
 	writel( BIT(31) | (best_idx << 24) | (best_n << 8) | best_m, reg );
 
+	_DBG_PRINTF("smhc%u ccu -- 0x%08x\n", smhc, readl(reg));
+	_DBG_PRINTF("src_rate -- %lu\n",  src_rate[best_idx]);
+
 	return  0;
 
 }

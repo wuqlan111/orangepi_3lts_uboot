@@ -12,7 +12,7 @@
 
 
 
-
+struct mmc * allwinner_mmc_init(int32_t sd_idx);
 
 
 

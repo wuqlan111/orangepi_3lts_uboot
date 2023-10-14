@@ -8,6 +8,7 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/gpio.h>
 #include <asm/arch/cpu.h>
+#include <asm/arch/smhc.h>
 
 
 /*init board mmc gpio*/
@@ -22,7 +23,11 @@ int32_t board_mmc_init(struct bd_info *bis)
         set_gpio_pin_drive(GPIOF,  i,  GPIO_DRIVE_LEVEL2);
     }
 
-    ret  =  mmc_clk_init(CCU_SMHC0_ID, 24000000);
+    if (!allwinner_mmc_init(CCU_SMHC0_ID)) {
+        ret  =  -1;
+    }
+
+    _DBG_PRINTF("mmc init %s\n", ret ? "failed": "success");
 
 	return  ret;
 }

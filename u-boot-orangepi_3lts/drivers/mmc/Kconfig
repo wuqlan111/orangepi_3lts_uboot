@@ -767,6 +767,14 @@ config MMC_SUNXI
 	  This selects support for the SD/MMC Host Controller on
 	  Allwinner sunxi SoCs.
 
+config MMC_ALLWINNER
+	bool "Allwinner SD/MMC Host Controller support"
+	depends on ARCH_ALLWINNER
+	default y
+	help
+	  This selects support for the SD/MMC Host Controller on
+	  Allwinner SoCs.
+
 config MMC_SUNXI_HAS_NEW_MODE
 	bool
 	depends on MMC_SUNXI
