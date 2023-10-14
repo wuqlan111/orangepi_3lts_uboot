@@ -188,10 +188,15 @@ static int32_t allwinner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, 
 	int32_t   ret  =  0;
 	writel(0,  &smhc->intmask);
 	writel(GENMASK(31,  0),  &smhc->rinsts);
+	setbits_32(&smhc->ctrl,  ALLWINNER_SMHC_CTRL_FIFO_RST);
 
 	while (readl(&smhc->status) & ALLWINNER_SMHC_STATUS_CARD_BUSY) ;
 
 	uint32_t  cmd_flag  =  allwinner_get_commond_flag(cmd, data);
+	if (data) {
+		writel(data->blocksize,  &smhc->blksiz);
+		writel(data->blocks * data->blocksize, &priv->reg->bytecnt);
+	}
 	writel(cmd->cmdarg,  &smhc->cmdarg);
 	writel(cmd_flag,  &smhc->cmd);
 
@@ -212,11 +217,32 @@ static int32_t allwinner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, 
 		}
 	}
 
-	uint32_t  rsp_len = cmd->resp_type & MMC_RSP_136 ? 4: 1;
-	for (uint32_t i  = 0; i < rsp_len; i++) {
-		cmd->response[i] = readl(&smhc->respx[i]);
+	ret  =  wait_reg32_flag(&smhc->rinsts,  ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE, 
+					ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE, 6000);
+	if (ret) {
+		goto error;
 	}
 
+	if (data) {
+		ret  =  wait_reg32_flag(&smhc->rinsts,  ALLWINNER_SMHC_RINTSTS_AUTO_COMPLETE, 
+					ALLWINNER_SMHC_RINTSTS_AUTO_COMPLETE, 6000);
+		if (ret) {
+			goto error;
+		}
+	}
+
+	if (cmd->resp_type & MMC_RSP_BUSY) {
+		while (readl(&smhc->status) & ALLWINNER_SMHC_STATUS_CARD_BUSY) ;
+	}
+
+	uint32_t  rsp_len = cmd->resp_type & MMC_RSP_136 ? 4: 1;
+	if (cmd->resp_type & MMC_RSP_136) {
+		for (uint32_t i  = 0; i < rsp_len; i++) {
+			cmd->response[i] = readl(&smhc->respx[3 - i]);
+		}
+	} else {
+		cmd->response[0]  =  readl(&smhc->respx[0]);
+	}
 
 	if (data) {
 		ret  =  allwinner_smhc_poll_read_write(smhc,  data);
@@ -333,6 +359,7 @@ static int32_t init_mmc_priv(const uint32_t sd_idx)
 
 	cfg->f_min = 400000;
 	cfg->f_max = 52000000;
+	cfg->b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
 
 	return  0;
 
