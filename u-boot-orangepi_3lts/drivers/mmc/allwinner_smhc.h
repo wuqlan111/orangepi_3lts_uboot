@@ -9,7 +9,8 @@
 #define  ALLWINNER_SMHC_CTRL_SOFT_RST             BIT(0)
 #define  ALLWINNER_SMHC_CTRL_FIFO_RST             BIT(1)
 
-
+#define  ALLWINNER_SMHC_CLKDIV_ENABLE             BIT(16)
+#define  ALLWINNER_SMHC_CLKDIV_DIV                GENMASK(7,  0)
 
 #define  ALLWINNER_SMHC_CMD_LOAD             BIT(31)
 #define  ALLWINNER_SMHC_CMD_VOL_SW           BIT(28)
@@ -30,6 +31,7 @@
 #define  ALLWINNER_SMHC_CMD_INDEX            GENMASK(5,  0)
 
 #define  ALLWINNER_SMHC_RINTSTS_AUTO_COMPLETE          BIT(14)
+#define  ALLWINNER_SMHC_RINTSTS_DATA_COMPLETE          BIT(3)
 #define  ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE           BIT(2)
 
 

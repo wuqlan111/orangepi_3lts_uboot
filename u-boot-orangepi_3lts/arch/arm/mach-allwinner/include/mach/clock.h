@@ -63,6 +63,7 @@ int32_t  uart_clk_init(const uint32_t uart_id);
 int32_t  dram_clk_init(const uint32_t clock);
 
 int32_t  mmc_clk_init(const uint32_t smhc,  const uint32_t clk);
+int32_t  mmc_clk_get(const uint32_t smhc, uint64_t * const clk);
 
 #endif
 

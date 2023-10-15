@@ -105,7 +105,12 @@ static  uint32_t  allwinner_get_commond_flag(struct mmc_cmd *cmd, struct mmc_dat
 	uint32_t  flag  =  0;
 
 	if (data) {
-		flag |=  ALLWINNER_SMHC_CMD_DATA_TRANS | ALLWINNER_SMHC_CMD_STOP_AUTO;
+		
+		flag |=  ALLWINNER_SMHC_CMD_DATA_TRANS;
+		if (data->blocks > 1) {
+			flag |= ALLWINNER_SMHC_CMD_STOP_AUTO;
+		}
+
 		if (data->flags & MMC_DATA_WRITE) {
 			flag |=  ALLWINNER_SMHC_CMD_TRANS_DIR;
 		}
@@ -161,13 +166,59 @@ static int32_t allwinner_smhc_poll_read_write(allwinner_h6_smhc_t * const smhc,
 
 }
 
+
+static int32_t allwinner_smhc_set_output_clk(allwinner_h6_smhc_t * const smhc,
+				    struct mmc * mmc)
+{
+	int32_t  ret =  0;
+	uint64_t src_rate  =  0;
+	allwinner_h6_smhc_priv_t * priv =  (allwinner_h6_smhc_priv_t *)mmc->priv;
+	const uint32_t sd_idx  = priv->sd_idx;
+
+	if (!mmc->clock) {
+		return  0;
+	}
+
+	clrbits_32(&smhc->clkdiv, ALLWINNER_SMHC_CLKDIV_ENABLE);
+
+	uint32_t  flag = ALLWINNER_SMHC_CMD_LOAD | ALLWINNER_SMHC_CMD_CHANGE_CLK |
+	    				ALLWINNER_SMHC_CMD_WAIT_TRANSFER;
+
+	writel(flag, &smhc->cmd);
+	ret  =  wait_reg32_flag(&smhc->cmd,  ALLWINNER_SMHC_CMD_LOAD, 
+					0,  0);
+	if (ret) {
+		_DBG_PRINTF("send clk change cmd failed!\n");
+		return  -1;
+	}
+
+	writel(0xffffffff,  &smhc->rinsts);
+
+	if (mmc_clk_init(sd_idx, mmc->clock)) {
+		return  -1;
+	}
+
+	clrbits_32(&smhc->clkdiv, ALLWINNER_SMHC_CLKDIV_DIV);
+	setbits_32(&smhc->clkdiv, ALLWINNER_SMHC_CLKDIV_ENABLE);
+
+	_DBG_PRINTF("smhc->clkdiv -- 0x%08x\n", readl(&smhc->clkdiv));
+
+	writel(0x10000,  &smhc->clkdiv);
+	_DBG_PRINTF("smhc->clkdiv -- 0x%08x\n", readl(&smhc->clkdiv));
+
+	return  0;
+
+}
+
+
+
 static int32_t allwinner_smhc_set_ios_common(allwinner_h6_smhc_t * const smhc,
 				    struct mmc *mmc)
 {
 	/* Change clock first */
-	// if (mmc->clock && mmc_config_clock(priv, mmc) != 0) {
-	// 	return -EINVAL;
-	// }
+	if (allwinner_smhc_set_output_clk(smhc, mmc)) {
+		return -EINVAL;
+	}
 
 	/* Change bus width */
 	if (mmc->bus_width == 8) {
@@ -224,15 +275,17 @@ static int32_t allwinner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, 
 	// }
 
 	ret  =  wait_reg32_flag(&smhc->rinsts,  ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE, 
-					ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE, 6000);
+					ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE, 0);
 	if (ret) {
 		_DBG_PRINTF("wait cmd complete failed,\trinsts = 0x%08x!\n", readl(&smhc->rinsts));
 		goto error;
 	}
 
 	if (data) {
-		ret  =  wait_reg32_flag(&smhc->rinsts,  ALLWINNER_SMHC_RINTSTS_AUTO_COMPLETE, 
-					ALLWINNER_SMHC_RINTSTS_AUTO_COMPLETE, 6000);
+		const uint32_t  tmp_flag  =  data->blocks > 1?  ALLWINNER_SMHC_RINTSTS_AUTO_COMPLETE: 
+							ALLWINNER_SMHC_RINTSTS_DATA_COMPLETE;
+		ret  =  wait_reg32_flag(&smhc->rinsts,  tmp_flag, 
+					tmp_flag, 0);
 		if (ret) {
 			_DBG_PRINTF("wait auto complete failed,\trinsts = 0x%08x!\n", readl(&smhc->rinsts));
 			goto error;

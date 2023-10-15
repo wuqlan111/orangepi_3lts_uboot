@@ -126,7 +126,7 @@ int32_t  mmc_clk_init(const uint32_t smhc,  const uint32_t clk)
 	peri0_4x  =  peri0_2x =  peri1_4x = peri1_2x = 0;
 	peri0_vld  =  peri1_vld  =  0;
 
-	if (!ccu_get_pll_perix_clk(0, &peri0_4x)) {
+	if (!ccu_get_pll_perix_clk(1, &peri0_4x)) {
 		peri0_vld =  1;
 		peri0_2x  =  peri0_4x >> 1;
 	}
@@ -167,10 +167,58 @@ int32_t  mmc_clk_init(const uint32_t smhc,  const uint32_t clk)
 	writel( BIT(31) | (best_idx << 24) | (best_n << 8) | best_m, reg );
 
 	_DBG_PRINTF("smhc%u ccu -- 0x%08x\n", smhc, readl(reg));
-	_DBG_PRINTF("src_rate -- %lu\n",  src_rate[best_idx]);
+	_DBG_PRINTF("src_rate -- %lu,\tclk -- %u\n",  src_rate[best_idx],  clk);
 
 	return  0;
 
 }
 
+
+int32_t  mmc_clk_get(const uint32_t smhc, uint64_t * const clk)
+{
+	int32_t  ret =  0;
+	const  uint32_t reg  =  CCU_SMHCX_CLK_REG(smhc);
+	if (smhc > CCU_SMHCX_MAX_ID ) {
+		_DBG_PRINTF("smhc [%u] invalid!\n", smhc);
+		return  -1;
+	}
+
+	const uint32_t flag =  readl(reg);
+	const uint32_t src_select = (flag & GENMASK(25,  24)) >> 24;
+	uint64_t src_rate =  0;
+
+	uint64_t  peri_4x, is_peri0;
+	peri_4x  =  is_peri0 = 0;
+
+	switch (src_select) {
+		case  0:
+			src_rate  =  24000000;
+			break;
+
+		case  1:
+			is_peri0  =  1;
+		case  2:
+			if (ccu_get_pll_perix_clk(is_peri0, &peri_4x)) {
+				_DBG_PRINTF("get mmc src rate %s failed!\n", is_peri0? "PLL_PERI0": "PLL_PERI1");
+				return  -1;
+			}
+			src_rate  =  peri_4x >> 1;
+			break;
+		default:
+			_DBG_PRINTF("mmc src clk select invalid!\n");
+			return  -1;
+	}
+
+	uint32_t clk_m, clk_n;
+	clk_n =  (flag & GENMASK(9,  8)) >> 8;
+	clk_m =  flag & 0xf;
+
+	*clk  =  src_rate / ( (1<<clk_n) * (clk_m + 1) );
+
+	_DBG_PRINTF("smhc%u ccu -- 0x%08x\n", smhc, readl(reg));
+	_DBG_PRINTF("src_rate -- %lu,\tsmhc%u_rate -- %lu\n", src_rate,  *clk);
+
+	return  0;
+
+}
 
