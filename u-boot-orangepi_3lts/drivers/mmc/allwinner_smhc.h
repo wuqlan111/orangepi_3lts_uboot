@@ -5,7 +5,7 @@
 #include  <stdint.h>
 #include  <linux/bitops.h>
 
-
+#define  ALLWINNER_SMHC_CTRL_AHB_ACCESS           BIT(31)
 #define  ALLWINNER_SMHC_CTRL_DMA_RST              BIT(2)
 #define  ALLWINNER_SMHC_CTRL_FIFO_RST             BIT(1)
 #define  ALLWINNER_SMHC_CTRL_SOFT_RST             BIT(0)

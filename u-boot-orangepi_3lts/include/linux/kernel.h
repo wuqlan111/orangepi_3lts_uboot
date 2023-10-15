@@ -284,4 +284,8 @@
 	offsetof(struct structure, member) == (offset), \
 	"`struct " #structure "` offset for `" #member "` is not " #offset)
 
+#define check_member_typedef(structure, member, offset) _Static_assert( \
+	offsetof(structure, member) == (offset), \
+	"`struct " #structure "` offset for `" #member "` is not " #offset)
+
 #endif

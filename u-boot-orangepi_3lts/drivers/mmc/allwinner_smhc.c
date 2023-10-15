@@ -8,8 +8,10 @@
 #include  <asm/io.h>
 #include  <errno.h>
 #include  <mmc.h>
+#include  <asm/barriers.h>
 #include  <dm/device_compat.h>
 #include  <linux/iopoll.h>
+#include  <linux/kernel.h>
 #include  <asm/arch/smhc.h>
 #include  <asm/arch/clock.h>
 
@@ -37,6 +39,7 @@ typedef  struct {
 	u32  funs;
 	u32  tcbcnt;
 	u32  tbbcnt;
+	u32  rsv0;
 	u32  csdc;
 	u32  a12a;
 	u32  ntsr;
@@ -50,7 +53,7 @@ typedef  struct {
 	u32  dlba;
 	u32  idst;
 	u32  idie;
-	u32  rsv3[26];
+	u32  rsv3[28];
 	u32  thld;
 	u32  rsv4[2];
 	u32  edsd;
@@ -66,6 +69,11 @@ typedef  struct {
 	u32  rsv7[12];
 	u32  fifo;
 } __attribute__((packed)) allwinner_h6_smhc_t;
+
+check_member_typedef(allwinner_h6_smhc_t, csdc, 0x54);
+check_member_typedef(allwinner_h6_smhc_t, hwrst, 0x78);
+check_member_typedef(allwinner_h6_smhc_t, thld, 0x100);
+check_member_typedef(allwinner_h6_smhc_t, fifo, 0x200);
 
 typedef  struct {
 	struct  mmc_config  cfg;
@@ -149,21 +157,37 @@ static int32_t allwinner_smhc_poll_read_write(allwinner_h6_smhc_t * const smhc,
 	int32_t  ret  =  0;
 	const uint32_t  times  =  (data->blocksize * data->blocks) >> 2;
 	const uint32_t  is_write  =  data->flags & MMC_DATA_READ? 0:  1;
-	const uint32_t wait_mask = is_write ? BIT(3):  BIT(2);
+	const uint32_t wait_mask =  is_write ? ALLWINNER_SMHC_STATUS_FIFO_FULL:  
+								ALLWINNER_SMHC_STATUS_FIFO_EMPTY;
 	const uint32_t wait_bit  = 0;
 	uint32_t * const buffer = (uint32_t *)(is_write ? data->src : data->dest );
 
-	for (uint32_t i  =  0; i < times; i++) {
+	setbits_32(&smhc->ctrl,  ALLWINNER_SMHC_CTRL_AHB_ACCESS);
+
+	for (uint32_t i  =  0; i < times;) {
 		if (wait_reg32_flag((uint32_t)&smhc->status, wait_mask, wait_bit, 60000)) {
 			ret =  -1;
 			break;
 		}
 
 		if (is_write) {
-			writel(buffer[i], &smhc->fifo);
-		} else {
-			buffer[i]  =  readl(&smhc->fifo);
+			writel(buffer[i++], &smhc->fifo);
+			continue;
 		}
+		
+		uint32_t  status = readl(&smhc->status);
+		_DBG_PRINTF("status -- 0x%08x\n",  readl(&smhc->status));
+		uint32_t fifo_level = (status & ALLWINNER_SMHC_STATUS_FIFO_LEVEL) >> 17;
+		if ( !fifo_level && (status & ALLWINNER_SMHC_STATUS_FIFO_FULL) ) {
+			fifo_level = 32;
+		}
+
+		for (uint32_t tmp_idx =  0; tmp_idx < fifo_level; tmp_idx++ ) {
+			buffer[i++]  =  readl(&smhc->fifo);
+			_DBG_PRINTF("word[%u] -- 0x%08x\n",  i-1, buffer[i-1]);
+		}
+
+		dmb();
 
 	}
 
@@ -264,11 +288,15 @@ static int32_t allwinner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, 
 
 	uint32_t  cmd_flag  =  allwinner_get_commond_flag(cmd, data);
 	if (data) {
+		uint32_t  bytecount  =  data->blocks * data->blocksize;
 		writel(data->blocksize,  &smhc->blksiz);
-		writel(data->blocks * data->blocksize, &smhc->bycnt);
+		writel(bytecount, &smhc->bycnt);
+		_DBG_PRINTF("blksz -- %u,\tbyte_cnt -- %u\n", data->blocksize, bytecount);
 	}
+
 	writel(cmd->cmdarg,  &smhc->cmdarg);
 	writel(cmd_flag,  &smhc->cmd);
+	_DBG_PRINTF("cmd_flag -- 0x%08x,\targ -- 0x%08x\n", cmd_flag,  cmd->cmdarg);
 	if (data) {
 		ret  =  allwinner_smhc_poll_read_write(smhc,  data);
 		if (ret) {
@@ -294,7 +322,7 @@ static int32_t allwinner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, 
 	// }
 
 	ret  =  wait_reg32_flag(&smhc->rinsts,  ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE, 
-					ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE, 0);
+					ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE, 600000);
 	if (ret) {
 		_DBG_PRINTF("wait cmd complete failed,\trinsts = 0x%08x!\n", readl(&smhc->rinsts));
 		goto error;
@@ -304,7 +332,7 @@ static int32_t allwinner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, 
 		const uint32_t  tmp_flag  =  data->blocks > 1?  ALLWINNER_SMHC_RINTSTS_AUTO_COMPLETE: 
 							ALLWINNER_SMHC_RINTSTS_DATA_COMPLETE;
 		ret  =  wait_reg32_flag(&smhc->rinsts,  tmp_flag, 
-					tmp_flag, 0);
+					tmp_flag,  600000);
 		if (ret) {
 			_DBG_PRINTF("wait auto complete failed,\trinsts = 0x%08x!\n", readl(&smhc->rinsts));
 			goto error;
