@@ -6,8 +6,9 @@
 #include  <linux/bitops.h>
 
 
-#define  ALLWINNER_SMHC_CTRL_SOFT_RST             BIT(0)
+#define  ALLWINNER_SMHC_CTRL_DMA_RST              BIT(2)
 #define  ALLWINNER_SMHC_CTRL_FIFO_RST             BIT(1)
+#define  ALLWINNER_SMHC_CTRL_SOFT_RST             BIT(0)
 
 #define  ALLWINNER_SMHC_CLKDIV_ENABLE             BIT(16)
 #define  ALLWINNER_SMHC_CLKDIV_DIV                GENMASK(7,  0)

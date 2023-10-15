@@ -16,7 +16,8 @@
 
 #include "allwinner_smhc.h"
 
-
+#undef   _DBG_PRINTF(fmt, args...)
+#define  _DBG_PRINTF(fmt, args...)
 
 typedef  struct {
 	u32  ctrl;
@@ -64,7 +65,7 @@ typedef  struct {
 	u32  emce_bmx[32];
 	u32  rsv7[12];
 	u32  fifo;
-} allwinner_h6_smhc_t;
+} __attribute__((packed)) allwinner_h6_smhc_t;
 
 typedef  struct {
 	struct  mmc_config  cfg;
@@ -103,6 +104,10 @@ typedef enum {
 static  uint32_t  allwinner_get_commond_flag(struct mmc_cmd *cmd, struct mmc_data *data)
 {
 	uint32_t  flag  =  0;
+
+	if (!cmd->cmdidx) {
+		flag = ALLWINNER_SMHC_CMD_INIT_SEQ;		
+	}
 
 	if (data) {
 		
@@ -166,6 +171,24 @@ static int32_t allwinner_smhc_poll_read_write(allwinner_h6_smhc_t * const smhc,
 
 }
 
+static  int32_t allwinner_notify_update_clk(allwinner_h6_smhc_t * const smhc)
+{
+	int32_t  ret  =  0;
+	const uint32_t  flag = ALLWINNER_SMHC_CMD_LOAD | ALLWINNER_SMHC_CMD_CHANGE_CLK |
+	    				ALLWINNER_SMHC_CMD_WAIT_TRANSFER;
+
+	writel(flag, &smhc->cmd);
+	ret  =  wait_reg32_flag(&smhc->cmd,  ALLWINNER_SMHC_CMD_LOAD, 
+					0,  0);
+	if (ret) {
+		_DBG_PRINTF("send clk change cmd failed!\n");
+	}
+
+	return  ret;
+
+}
+
+
 
 static int32_t allwinner_smhc_set_output_clk(allwinner_h6_smhc_t * const smhc,
 				    struct mmc * mmc)
@@ -181,14 +204,7 @@ static int32_t allwinner_smhc_set_output_clk(allwinner_h6_smhc_t * const smhc,
 
 	clrbits_32(&smhc->clkdiv, ALLWINNER_SMHC_CLKDIV_ENABLE);
 
-	uint32_t  flag = ALLWINNER_SMHC_CMD_LOAD | ALLWINNER_SMHC_CMD_CHANGE_CLK |
-	    				ALLWINNER_SMHC_CMD_WAIT_TRANSFER;
-
-	writel(flag, &smhc->cmd);
-	ret  =  wait_reg32_flag(&smhc->cmd,  ALLWINNER_SMHC_CMD_LOAD, 
-					0,  0);
-	if (ret) {
-		_DBG_PRINTF("send clk change cmd failed!\n");
+	if (allwinner_notify_update_clk(smhc)) {
 		return  -1;
 	}
 
@@ -201,12 +217,11 @@ static int32_t allwinner_smhc_set_output_clk(allwinner_h6_smhc_t * const smhc,
 	clrbits_32(&smhc->clkdiv, ALLWINNER_SMHC_CLKDIV_DIV);
 	setbits_32(&smhc->clkdiv, ALLWINNER_SMHC_CLKDIV_ENABLE);
 
+	ret  =  allwinner_notify_update_clk(smhc);
+
 	_DBG_PRINTF("smhc->clkdiv -- 0x%08x\n", readl(&smhc->clkdiv));
 
-	writel(0x10000,  &smhc->clkdiv);
-	_DBG_PRINTF("smhc->clkdiv -- 0x%08x\n", readl(&smhc->clkdiv));
-
-	return  0;
+	return  ret;
 
 }
 
@@ -240,6 +255,10 @@ static int32_t allwinner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, 
 	writel(0,  &smhc->intmask);
 	writel(GENMASK(31,  0),  &smhc->rinsts);
 	setbits_32(&smhc->ctrl,  ALLWINNER_SMHC_CTRL_FIFO_RST);
+
+	if (cmd->cmdidx == 12) {
+		return 0;		
+	}
 
 	while (readl(&smhc->status) & ALLWINNER_SMHC_STATUS_CARD_BUSY) ;
 
@@ -369,7 +388,8 @@ static int32_t allwinner_mmc_core_init(struct mmc *mmc)
 	allwinner_h6_smhc_t * regs = (allwinner_h6_smhc_t *)priv->base;
 
 	/* Reset controller */
-	writel( BIT(8) | BIT(0), &regs->ctrl);
+	writel( ALLWINNER_SMHC_CTRL_DMA_RST | ALLWINNER_SMHC_CTRL_FIFO_RST | 
+					ALLWINNER_SMHC_CTRL_SOFT_RST, &regs->ctrl);
 	udelay(1000);
 
 	return 0;
@@ -417,6 +437,9 @@ static int32_t init_mmc_priv(const uint32_t sd_idx)
 	cfg->f_min = 400000;
 	cfg->f_max = 52000000;
 	cfg->b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
+
+	_DBG_PRINTF("sd_idx -- %u,\tbase -- 0x%16lx\n", mmc_priv[sd_idx].sd_idx, 
+						mmc_priv[sd_idx].base);
 
 	return  0;
 

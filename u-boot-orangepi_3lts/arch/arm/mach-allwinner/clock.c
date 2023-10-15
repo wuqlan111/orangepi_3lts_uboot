@@ -6,6 +6,8 @@
 #include <linux/delay.h>
 #include <log.h>
 
+#undef   _DBG_PRINTF(fmt, args...)
+#define  _DBG_PRINTF(fmt, args...)
 
 int32_t  ccu_get_pll_perix_clk(const uint32_t is_peri0, uint64_t * rate)
 {

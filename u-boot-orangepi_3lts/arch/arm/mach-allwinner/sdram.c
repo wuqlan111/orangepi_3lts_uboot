@@ -15,6 +15,8 @@
 #include <linux/kconfig.h>
 #include <log.h>
 
+#undef   _DBG_PRINTF(fmt, args...)
+#define  _DBG_PRINTF(fmt, args...)
 /*
  * The DRAM controller structure on H6 is similar to the ones on A23/A80:
  * they all contains 3 parts, COM, CTL and PHY. (As a note on A33/A83T/H3/A64

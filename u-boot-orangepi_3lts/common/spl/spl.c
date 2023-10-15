@@ -120,6 +120,9 @@ int __weak booti_setup(ulong image, ulong *relocated_addr, ulong *size, bool for
 }
 #endif
 
+#undef   _DBG_PRINTF(fmt, args...)
+#define  _DBG_PRINTF(fmt, args...)
+
 /* Weak default function for arch/board-specific fixups to the spl_image_info */
 void __weak spl_perform_fixups(struct spl_image_info *spl_image)
 {
