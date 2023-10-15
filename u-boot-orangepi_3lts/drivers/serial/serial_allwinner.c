@@ -346,6 +346,21 @@ static int32_t check_uartx_cfg(allwinner_h6_uart_t * const regs, const ulong usa
 }
 
 
+static  void _allwinner_uartx_test(allwinner_h6_uart_t * const regs)
+{
+	int32_t  ret =  0;
+	char * info = "allwinner uartx initial finish\r\n";
+	const uint32_t len  = strlen(info);
+
+	for (uint32_t i =  0; i < len; i ++) {
+		do {
+			ret  =  _allwinner_h6_serial_putc(regs, info[i]);
+		} while (ret == -EAGAIN);
+	}
+
+}
+
+
 int32_t allwinner_uartx_init(void)
 {
 	int32_t  ret  =  0;
@@ -358,6 +373,8 @@ int32_t allwinner_uartx_init(void)
 	}
 
 	ret  =  _allwinner_h6_serial_init(regs,  clk,  gd->baudrate);
+
+	_allwinner_uartx_test(regs);
 
 	return  ret;
 

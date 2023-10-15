@@ -1,4 +1,6 @@
 
+#define  LOG_CATEGORY  UCLASS_MMC
+
 #include  <common.h>
 #include  <dm.h>
 #include  <log.h>
@@ -6,11 +8,18 @@
 #include  <asm/io.h>
 #include  <errno.h>
 #include  <mmc.h>
+#include  <asm/barriers.h>
 #include  <dm/device_compat.h>
+#include  <linux/iopoll.h>
+#include  <linux/kernel.h>
+#include  <asm/arch/smhc.h>
+#include  <asm/arch/clock.h>
+
 
 #include "allwinner_smhc.h"
 
-
+#undef   _DBG_PRINTF(fmt, args...)
+#define  _DBG_PRINTF(fmt, args...)
 
 typedef  struct {
 	u32  ctrl;
@@ -21,7 +30,7 @@ typedef  struct {
 	u32  bycnt;
 	u32  cmd;
 	u32  cmdarg;
-	u32  respx[4],
+	u32  respx[4];
 	u32  intmask;
 	u32  mintsts;
 	u32  rinsts;
@@ -30,6 +39,7 @@ typedef  struct {
 	u32  funs;
 	u32  tcbcnt;
 	u32  tbbcnt;
+	u32  rsv0;
 	u32  csdc;
 	u32  a12a;
 	u32  ntsr;
@@ -43,7 +53,7 @@ typedef  struct {
 	u32  dlba;
 	u32  idst;
 	u32  idie;
-	u32  rsv3[26];
+	u32  rsv3[28];
 	u32  thld;
 	u32  rsv4[2];
 	u32  edsd;
@@ -58,7 +68,12 @@ typedef  struct {
 	u32  emce_bmx[32];
 	u32  rsv7[12];
 	u32  fifo;
-} allwinner_h6_smhc_t;
+} __attribute__((packed)) allwinner_h6_smhc_t;
+
+check_member_typedef(allwinner_h6_smhc_t, csdc, 0x54);
+check_member_typedef(allwinner_h6_smhc_t, hwrst, 0x78);
+check_member_typedef(allwinner_h6_smhc_t, thld, 0x100);
+check_member_typedef(allwinner_h6_smhc_t, fifo, 0x200);
 
 typedef  struct {
 	struct  mmc_config  cfg;
@@ -67,6 +82,8 @@ typedef  struct {
 
 typedef  struct {
 	fdt_addr_t   base;
+	uint32_t  sd_idx;
+	struct mmc_config cfg;
 } allwinner_h6_smhc_priv_t;
 
 typedef enum {
@@ -96,9 +113,18 @@ static  uint32_t  allwinner_get_commond_flag(struct mmc_cmd *cmd, struct mmc_dat
 {
 	uint32_t  flag  =  0;
 
+	if (!cmd->cmdidx) {
+		flag = ALLWINNER_SMHC_CMD_INIT_SEQ;		
+	}
+
 	if (data) {
-		flag |=  ALLWINNER_SMHC_CMD_DATA_TRANS | ALLWINNER_SMHC_CMD_STOP_AUTO;
-		if (data->flag & MMC_DATA_WRITE) {
+		
+		flag |=  ALLWINNER_SMHC_CMD_DATA_TRANS;
+		if (data->blocks > 1) {
+			flag |= ALLWINNER_SMHC_CMD_STOP_AUTO;
+		}
+
+		if (data->flags & MMC_DATA_WRITE) {
 			flag |=  ALLWINNER_SMHC_CMD_TRANS_DIR;
 		}
 
@@ -129,64 +155,201 @@ static int32_t allwinner_smhc_poll_read_write(allwinner_h6_smhc_t * const smhc,
 				struct mmc_data *data)
 {
 	int32_t  ret  =  0;
+	const uint32_t  times  =  (data->blocksize * data->blocks) >> 2;
+	const uint32_t  is_write  =  data->flags & MMC_DATA_READ? 0:  1;
+	const uint32_t wait_mask =  is_write ? ALLWINNER_SMHC_STATUS_FIFO_FULL:  
+								ALLWINNER_SMHC_STATUS_FIFO_EMPTY;
+	const uint32_t wait_bit  = 0;
+	uint32_t * const buffer = (uint32_t *)(is_write ? data->src : data->dest );
 
-	if (data->flags & MMC_DATA_READ) {
+	setbits_32(&smhc->ctrl,  ALLWINNER_SMHC_CTRL_AHB_ACCESS);
 
+	for (uint32_t i  =  0; i < times;) {
+		if (wait_reg32_flag((uint32_t)&smhc->status, wait_mask, wait_bit, 60000)) {
+			ret =  -1;
+			break;
+		}
 
+		if (is_write) {
+			writel(buffer[i++], &smhc->fifo);
+			continue;
+		}
+		
+		uint32_t  status = readl(&smhc->status);
+		_DBG_PRINTF("status -- 0x%08x\n",  readl(&smhc->status));
+		uint32_t fifo_level = (status & ALLWINNER_SMHC_STATUS_FIFO_LEVEL) >> 17;
+		if ( !fifo_level && (status & ALLWINNER_SMHC_STATUS_FIFO_FULL) ) {
+			fifo_level = 32;
+		}
 
+		for (uint32_t tmp_idx =  0; tmp_idx < fifo_level; tmp_idx++ ) {
+			buffer[i++]  =  readl(&smhc->fifo);
+			_DBG_PRINTF("word[%u] -- 0x%08x\n",  i-1, buffer[i-1]);
+		}
 
-	} else {
-
-
-
-
+		dmb();
 
 	}
 
+	return  ret;
+
+}
+
+static  int32_t allwinner_notify_update_clk(allwinner_h6_smhc_t * const smhc)
+{
+	int32_t  ret  =  0;
+	const uint32_t  flag = ALLWINNER_SMHC_CMD_LOAD | ALLWINNER_SMHC_CMD_CHANGE_CLK |
+	    				ALLWINNER_SMHC_CMD_WAIT_TRANSFER;
+
+	writel(flag, &smhc->cmd);
+	ret  =  wait_reg32_flag(&smhc->cmd,  ALLWINNER_SMHC_CMD_LOAD, 
+					0,  0);
+	if (ret) {
+		_DBG_PRINTF("send clk change cmd failed!\n");
+	}
 
 	return  ret;
 
 }
 
 
-static int32_t allwiner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, struct mmc *mmc,
+
+static int32_t allwinner_smhc_set_output_clk(allwinner_h6_smhc_t * const smhc,
+				    struct mmc * mmc)
+{
+	int32_t  ret =  0;
+	uint64_t src_rate  =  0;
+	allwinner_h6_smhc_priv_t * priv =  (allwinner_h6_smhc_priv_t *)mmc->priv;
+	const uint32_t sd_idx  = priv->sd_idx;
+
+	if (!mmc->clock) {
+		return  0;
+	}
+
+	clrbits_32(&smhc->clkdiv, ALLWINNER_SMHC_CLKDIV_ENABLE);
+
+	if (allwinner_notify_update_clk(smhc)) {
+		return  -1;
+	}
+
+	writel(0xffffffff,  &smhc->rinsts);
+
+	if (mmc_clk_init(sd_idx, mmc->clock)) {
+		return  -1;
+	}
+
+	clrbits_32(&smhc->clkdiv, ALLWINNER_SMHC_CLKDIV_DIV);
+	setbits_32(&smhc->clkdiv, ALLWINNER_SMHC_CLKDIV_ENABLE);
+
+	ret  =  allwinner_notify_update_clk(smhc);
+
+	_DBG_PRINTF("smhc->clkdiv -- 0x%08x\n", readl(&smhc->clkdiv));
+
+	return  ret;
+
+}
+
+
+
+static int32_t allwinner_smhc_set_ios_common(allwinner_h6_smhc_t * const smhc,
+				    struct mmc *mmc)
+{
+	/* Change clock first */
+	if (allwinner_smhc_set_output_clk(smhc, mmc)) {
+		return -EINVAL;
+	}
+
+	/* Change bus width */
+	if (mmc->bus_width == 8) {
+		writel(0x2, &smhc->ctype);		
+	} else if (mmc->bus_width == 4) {
+		writel(0x1, &smhc->ctype);		
+	} else {
+		writel(0x0, &smhc->ctype);		
+	}
+
+	return 0;
+}
+
+
+static int32_t allwinner_smhc_send_cmd_common(allwinner_h6_smhc_t * const smhc, struct mmc *mmc,
 				 struct mmc_cmd *cmd, struct mmc_data *data)
 {
 	int32_t   ret  =  0;
 	writel(0,  &smhc->intmask);
 	writel(GENMASK(31,  0),  &smhc->rinsts);
+	setbits_32(&smhc->ctrl,  ALLWINNER_SMHC_CTRL_FIFO_RST);
+
+	if (cmd->cmdidx == 12) {
+		return 0;		
+	}
 
 	while (readl(&smhc->status) & ALLWINNER_SMHC_STATUS_CARD_BUSY) ;
 
 	uint32_t  cmd_flag  =  allwinner_get_commond_flag(cmd, data);
+	if (data) {
+		uint32_t  bytecount  =  data->blocks * data->blocksize;
+		writel(data->blocksize,  &smhc->blksiz);
+		writel(bytecount, &smhc->bycnt);
+		_DBG_PRINTF("blksz -- %u,\tbyte_cnt -- %u\n", data->blocksize, bytecount);
+	}
+
 	writel(cmd->cmdarg,  &smhc->cmdarg);
 	writel(cmd_flag,  &smhc->cmd);
-
-	if (!data && (cmd->resp_type & MMC_RSP_BUSY)) {
-		uint32_t timeout = 6000;
-
-		/* Poll on DATA0 line for cmd with busy signal for 600 ms */
-		while ( (timeout > 0) && (readl(&smhc->status) 
-					& ALLWINNER_SMHC_STATUS_CARD_BUSY) ) {
-			udelay(100);
-			timeout--;
+	_DBG_PRINTF("cmd_flag -- 0x%08x,\targ -- 0x%08x\n", cmd_flag,  cmd->cmdarg);
+	if (data) {
+		ret  =  allwinner_smhc_poll_read_write(smhc,  data);
+		if (ret) {
+			_DBG_PRINTF("poll transfer data failed!\n");
 		}
+	}
 
-		if (timeout <= 0) {
-			dev_err("Timeout waiting for DAT0 to go high!\n");
-			ret = -ETIMEDOUT;
-			goto   error;
+	// if (!data && (cmd->resp_type & MMC_RSP_BUSY)) {
+	// 	uint32_t timeout = 600;
+
+	// 	/* Poll on DATA0 line for cmd with busy signal for 60 ms */
+	// 	while ( (timeout > 0) && (readl(&smhc->status) 
+	// 				& ALLWINNER_SMHC_STATUS_CARD_BUSY) ) {
+	// 		udelay(100);
+	// 		timeout--;
+	// 	}
+
+	// 	if (timeout <= 0) {
+	// 		log_err("Timeout waiting for DAT0 to go high!\n");
+	// 		ret = -ETIMEDOUT;
+	// 		goto   error;
+	// 	}
+	// }
+
+	ret  =  wait_reg32_flag(&smhc->rinsts,  ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE, 
+					ALLWINNER_SMHC_RINTSTS_CMD_COMPLETE, 600000);
+	if (ret) {
+		_DBG_PRINTF("wait cmd complete failed,\trinsts = 0x%08x!\n", readl(&smhc->rinsts));
+		goto error;
+	}
+
+	if (data) {
+		const uint32_t  tmp_flag  =  data->blocks > 1?  ALLWINNER_SMHC_RINTSTS_AUTO_COMPLETE: 
+							ALLWINNER_SMHC_RINTSTS_DATA_COMPLETE;
+		ret  =  wait_reg32_flag(&smhc->rinsts,  tmp_flag, 
+					tmp_flag,  600000);
+		if (ret) {
+			_DBG_PRINTF("wait auto complete failed,\trinsts = 0x%08x!\n", readl(&smhc->rinsts));
+			goto error;
 		}
+	}
+
+	if (cmd->resp_type & MMC_RSP_BUSY) {
+		while (readl(&smhc->status) & ALLWINNER_SMHC_STATUS_CARD_BUSY) ;
 	}
 
 	uint32_t  rsp_len = cmd->resp_type & MMC_RSP_136 ? 4: 1;
-	for (uint32_t i  = 0; i < rsp_len; i++) {
-		cmd->response[i] = readl(&smhc->respx[i]);
-	}
-
-
-	if (data) {
-		ret  =  allwinner_smhc_poll_read_write(smhc,  data);
+	if (cmd->resp_type & MMC_RSP_136) {
+		for (uint32_t i  = 0; i < rsp_len; i++) {
+			cmd->response[i] = readl(&smhc->respx[3 - i]);
+		}
+	} else {
+		cmd->response[0]  =  readl(&smhc->respx[0]);
 	}
 
 error:
@@ -202,24 +365,138 @@ error:
 }
 
 
-static int32_t allwiner_smhc_getcd_common(allwinner_h6_smhc_t * const smhc)
+static int32_t allwinner_smhc_getcd_common(allwinner_h6_smhc_t * const smhc)
 {
-	int32_t  ret  =  readl(smhc->status) & ALLWINNER_SMHC_STATUS_CARD_PRESENT? 1:  0;
+	int32_t  ret  =  readl(&smhc->status) & ALLWINNER_SMHC_STATUS_CARD_PRESENT? 1:  0;
 	return  ret;
 }
 
 
-static int32_t allwiner_smhc_wait_dat0_common(allwinner_h6_smhc_t * const smhc, int32_t state,
+static int32_t allwinner_smhc_wait_dat0_common(allwinner_h6_smhc_t * const smhc, int32_t state,
 			       int32_t timeout_us)
 {
 	int32_t  ret  =  0;
 	uint32_t  tmp  =  0;
-	ret = readx_poll_timeout(readl, &smhc->status, tmp,
+	ret = readl_poll_timeout(&smhc->status, tmp,
 				!!(tmp & ALLWINNER_SMHC_STATUS_CARD_BUSY) == !!state,
 				timeout_us);
 	return ret;
 }
 
+
+
+#if !CONFIG_IS_ENABLED(DM_MMC)
+
+static allwinner_h6_smhc_priv_t mmc_priv[CCU_SMHCX_MAX_ID+1];
+static const char * const mmc_name[CCU_SMHCX_MAX_ID+1] = {
+	"SMHC0",
+	"SMHC1",
+	"SMHC2",
+};
+
+static int allwinner_mmc_set_ios_legacy(struct mmc *mmc)
+{
+	allwinner_h6_smhc_priv_t * priv =  (allwinner_h6_smhc_priv_t *)mmc->priv;
+	allwinner_h6_smhc_t * regs = (allwinner_h6_smhc_t *)priv->base;
+
+	return  allwinner_smhc_set_ios_common(regs, mmc);
+}
+
+static int allwinner_mmc_send_cmd_legacy(struct mmc *mmc, struct mmc_cmd *cmd,
+				     struct mmc_data *data)
+{
+	allwinner_h6_smhc_priv_t * priv =  (allwinner_h6_smhc_priv_t *)mmc->priv;
+	allwinner_h6_smhc_t * regs = (allwinner_h6_smhc_t *)priv->base;
+	return allwinner_smhc_send_cmd_common(regs, mmc, cmd, data);
+}
+
+static int32_t allwinner_mmc_core_init(struct mmc *mmc)
+{
+	allwinner_h6_smhc_priv_t * priv =  (allwinner_h6_smhc_priv_t *)mmc->priv;
+	allwinner_h6_smhc_t * regs = (allwinner_h6_smhc_t *)priv->base;
+
+	/* Reset controller */
+	writel( ALLWINNER_SMHC_CTRL_DMA_RST | ALLWINNER_SMHC_CTRL_FIFO_RST | 
+					ALLWINNER_SMHC_CTRL_SOFT_RST, &regs->ctrl);
+	udelay(1000);
+
+	return 0;
+}
+
+static const struct mmc_ops allwinner_mmc_ops = {
+	.send_cmd	=  allwinner_mmc_send_cmd_legacy,
+	.set_ios	=  allwinner_mmc_set_ios_legacy,
+	.init		=  allwinner_mmc_core_init,
+};
+
+static int32_t init_mmc_priv(const uint32_t sd_idx)
+{
+	if (sd_idx > CCU_SMHCX_MAX_ID) {
+		_DBG_PRINTF("sd_idx [%u] invalid!\n", sd_idx);
+		return  -1;
+	}
+
+	memset(&mmc_priv[sd_idx],  0, sizeof(allwinner_h6_smhc_priv_t));
+	mmc_priv[sd_idx].base  =  ALLWINNER_H6_SMHCX_REG(sd_idx);
+	mmc_priv[sd_idx].sd_idx  =  sd_idx;
+	struct mmc_config * cfg =  &mmc_priv[sd_idx].cfg;
+
+	cfg->name  =  mmc_name[sd_idx];
+	cfg->ops  =  &allwinner_mmc_ops;
+
+	switch (sd_idx) {
+		case CCU_SMHC0_ID:
+			cfg->host_caps = MMC_MODE_4BIT | MMC_MODE_HS_52MHz | MMC_MODE_HS;
+			cfg->voltages  =  MMC_VDD_32_33;
+			break;
+
+		case CCU_SMHC1_ID:
+			cfg->host_caps = MMC_MODE_4BIT | MMC_MODE_HS_52MHz | MMC_MODE_HS;
+			cfg->voltages  =  MMC_VDD_32_33 | MMC_VDD_165_195;
+			break;
+
+
+		case CCU_SMHC2_ID:
+			cfg->host_caps = MMC_MODE_4BIT | MMC_MODE_8BIT | MMC_MODE_HS_52MHz | MMC_MODE_HS;
+			cfg->voltages  =  MMC_VDD_32_33 | MMC_VDD_165_195;
+			break;
+	}
+
+	cfg->f_min = 400000;
+	cfg->f_max = 52000000;
+	cfg->b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
+
+	_DBG_PRINTF("sd_idx -- %u,\tbase -- 0x%16lx\n", mmc_priv[sd_idx].sd_idx, 
+						mmc_priv[sd_idx].base);
+
+	return  0;
+
+}
+
+
+//初始化mmc设备
+struct mmc * allwinner_mmc_init(int32_t sd_idx)
+{
+	struct mmc_config * cfg =  &mmc_priv[sd_idx].cfg;
+	if ((sd_idx > CCU_SMHCX_MAX_ID)  || (sd_idx < 0)) {
+		_DBG_PRINTF("sd_idx [%u] invalid!\n", sd_idx);
+		return  NULL;
+	}
+
+	if (init_mmc_priv(sd_idx)) {
+		return  NULL;
+	}
+
+	if (mmc_clk_init(sd_idx,  24000000)) {
+		return NULL;
+	}
+	
+	return  mmc_create(cfg, &mmc_priv[sd_idx]);
+}
+
+
+
+#else
 
 
 static int32_t allwinner_h6_send_cmd(struct udevice *dev, struct mmc_cmd *cmd,
@@ -228,7 +505,15 @@ static int32_t allwinner_h6_send_cmd(struct udevice *dev, struct mmc_cmd *cmd,
 	allwinner_h6_smhc_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_smhc_priv_t * priv = dev_get_priv(dev);
 
-	return allwiner_smhc_send_cmd_common(priv->base, &plat->mmc, cmd, data);
+	return allwinner_smhc_send_cmd_common(priv->base, &plat->mmc_info, cmd, data);
+}
+
+static int32_t allwinner_h6_set_ios(struct udevice *dev)
+{
+	allwinner_h6_smhc_plat_t * plat = dev_get_plat(dev);
+	allwinner_h6_smhc_priv_t * priv = dev_get_priv(dev);
+
+	return allwinner_smhc_set_ios_common(priv->base, &plat->mmc_info);
 }
 
 static int32_t allwinner_h6_get_cd(struct udevice *dev)
@@ -236,7 +521,7 @@ static int32_t allwinner_h6_get_cd(struct udevice *dev)
 	allwinner_h6_smhc_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_smhc_priv_t * priv = dev_get_priv(dev);
 
-	return  allwiner_smhc_getcd_common(priv->base);
+	return  allwinner_smhc_getcd_common(priv->base);
 }
 
 
@@ -245,9 +530,8 @@ static int32_t allwinner_h6_wait_data0(struct udevice *dev, int32_t state,
 {
 	allwinner_h6_smhc_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_smhc_priv_t * priv = dev_get_priv(dev);
-	return  allwiner_smhc_wait_dat0_common(priv->base,  state, timeout_us);
+	return  allwinner_smhc_wait_dat0_common(priv->base,  state, timeout_us);
 }
-
 
 static const struct udevice_id allwinner_h6_smhc_match[] = {
 	{ .compatible = "allwinner, h6-v200-smhc" },
@@ -257,9 +541,9 @@ static const struct udevice_id allwinner_h6_smhc_match[] = {
 static const struct dm_mmc_ops allwinner_h6_smhc_ops = {
 	// .reinit  =  ,
 	.send_cmd = allwinner_h6_send_cmd,
-	// .set_ios = allwinner_h6_set_ios,
+	.set_ios = allwinner_h6_set_ios,
 	.get_cd  =  allwinner_h6_get_cd,
-	.wait_data0 = allwinner_h6_wait_data0,
+	.wait_dat0 = allwinner_h6_wait_data0,
 
 };
 
@@ -283,18 +567,21 @@ static int32_t allwinner_h6_smhc_probe(struct udevice *dev)
 static int32_t allwinner_h6_smhc_bind(struct udevice *dev)
 {
 	allwinner_h6_smhc_plat_t * plat = dev_get_plat(dev);
-	return mmc_bind(dev, &plat->mmc, &plat->cfg);
+	return mmc_bind(dev, &plat->mmc_info, &plat->cfg);
 }
 
 U_BOOT_DRIVER(allwinner_h6_smhc) = {
 	.name = "allwinner, h6-v200-smhc",
 	.id = UCLASS_MMC,
-	.of_match = allwinner_smhc_match,
+	.of_match = allwinner_h6_smhc_match,
 	.bind = allwinner_h6_smhc_bind,
 	.probe = allwinner_h6_smhc_probe,
 	.priv_auto	= sizeof(allwinner_h6_smhc_priv_t),
 	.plat_auto	= sizeof(allwinner_h6_smhc_plat_t),
-	.ops = &allwinner_smhc_ops,
+	.ops = &allwinner_h6_smhc_ops,
 };
+
+
+#endif
 
 

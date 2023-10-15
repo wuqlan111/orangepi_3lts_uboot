@@ -9,6 +9,7 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/gpio.h>
 #include <asm/arch/spl.h>
+#include <asm/arch/dram.h>
 #include <log.h>
 
 #include <linux/compiler.h>
@@ -91,6 +92,12 @@ uint32_t spl_boot_device(void)
 
 void __weak allwinner_spl_board_init(void)
 {
+	gd->ram_size = sunxi_dram_init();
+	_DBG_PRINTF("DRAM:\t%lu MB\n", gd->ram_size >> 20);
+	if (!gd->ram_size)
+		hang();
+
+	// sunxi_spl_store_dram_size(gd->ram_size);
 
 }
 
@@ -98,8 +105,8 @@ void board_init_f(ulong dummy)
 {
     int32_t  ret  =  0;
 
-	allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_DISABLE,  1);
-	allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  0);
+	// allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_DISABLE,  0);
+	// allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  0);
 
 	set_gpio_pin_func( GPIOH,  0,  2);
 	set_gpio_pin_func( GPIOH,  1,  2);
@@ -117,6 +124,7 @@ void board_init_f(ulong dummy)
 	allwinner_spl_board_init();
 	_DBG_PRINTF("allwinner_spl_board_init finished!\n");
 
+	return;
 
 }
 
