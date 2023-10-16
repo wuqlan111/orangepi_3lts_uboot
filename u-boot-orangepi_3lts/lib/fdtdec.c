@@ -1696,7 +1696,7 @@ int fdtdec_setup(void)
 
 	ret = fdtdec_prepare_fdt(gd->fdt_blob);
 	if (!ret) {
-		_DBG_PRINTF("check fdt_addr -- %p success\n", gd->fdt_blob);
+		_DBG_PRINTF("check fdt_addr -- 0x%p success\n", gd->fdt_blob);
 		ret = fdtdec_board_setup(gd->fdt_blob);		
 	}
 

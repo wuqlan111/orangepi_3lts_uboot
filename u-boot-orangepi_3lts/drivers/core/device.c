@@ -41,20 +41,34 @@ static void printf_udev_info(const struct udevice * const dev)
 		return;
 	}
 
-	_DBG_PRINTF("driver -- %s\n", (dev)->driver->name);
-	_DBG_PRINTF("name -- %s\n", (dev)->name);
-	_DBG_PRINTF("parent -- %s\n", (dev)->parent->name);
+	_DBG_PRINTF("driver -- %s\n", (dev)->driver->name? (dev)->driver->name: "null");		
+	_DBG_PRINTF("name -- %s\n", (dev)->name? (dev)->name : "null");
+	if ((dev)->parent) {
+		_DBG_PRINTF("parent -- %s\n", (dev)->parent->name? (dev)->parent->name: "null");		
+	}
+	
 	_DBG_PRINTF("flag -- 0x%08x\n", dev_get_flags(dev));
 	_DBG_PRINTF("drv_data -- 0x%016lx\n", (dev)->driver_data);
 	_DBG_PRINTF("seq -- %u\n", (dev)->seq_);
-	_DBG_PRINTF("uclass -- %s\n", (dev)->uclass->uc_drv->name);
-	_DBG_PRINTF("uclass_id -- %u\n", (dev)->uclass->uc_drv->id);
+
+	if ((dev)->uclass && (dev)->uclass->uc_drv ) {
+		_DBG_PRINTF("uclass -- %s\n", (dev)->uclass->uc_drv->name? 
+								(dev)->uclass->uc_drv->name: "null");
+		_DBG_PRINTF("uclass_id -- %u\n", (dev)->uclass->uc_drv->id);
+	}
 
 #if CONFIG_IS_ENABLED(OF_REAL)
-	_DBG_PRINTF("of_offset -- 0x%x\n", (dev)->node_.of_offset);
-	_DBG_PRINTF("of_name -- %s\n", (dev)->node_.np->name);
-	_DBG_PRINTF("of_type -- %s\n", (dev)->node_.np->type);
-	_DBG_PRINTF("of_full_name -- %s\n", (dev)->node_.np->full_name);
+	if (of_live_active()) {
+		if ( (dev)->node_.np != NULL ) {
+			_DBG_PRINTF("of_name -- %s\n", (dev)->node_.np->name ? (dev)->node_.np->name : "null");
+			_DBG_PRINTF("of_type -- %s\n", (dev)->node_.np->type? (dev)->node_.np->type: "null");
+			_DBG_PRINTF("of_full_name -- %s\n", (dev)->node_.np->full_name? 
+											(dev)->node_.np->full_name: "null");
+		}
+	} else {
+		_DBG_PRINTF("of_offset -- 0x%x\n", (dev)->node_.of_offset);
+	}
+	
 #endif	
 
 }
@@ -73,6 +87,8 @@ static int device_bind_common(struct udevice *parent, const struct driver *drv,
 	bool auto_seq = true;
 	void *ptr;
 
+	_DBG_PRINTF_LINE();
+	_DBG_PRINTF("device_bind_common\n");
 	if (CONFIG_IS_ENABLED(OF_PLATDATA_NO_BIND))
 		return -ENOSYS;
 
