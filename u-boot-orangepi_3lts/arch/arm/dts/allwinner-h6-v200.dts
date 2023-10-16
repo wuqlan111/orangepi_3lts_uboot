@@ -3,20 +3,40 @@
 
 #include "allwinner-h6.dtsi"
 #include "allwinner-u-boot.dtsi"
+#include "allwinner-h6-pinctrl.h"
 
 / {
 	model = "Allwinner H6 v200 family Soc";
 	compatible = "allwinner,H6-v200";
 
 	chosen {
-		stdout-path = &uart1;
+		stdout-path = &uart0;
 	};
 
 	memory@40000000 {
 		device_type = "memory";
 		reg = <0x00000000 0x40000000 0 0xc0000000>;
 	};
+
+
+
 };
+
+&pinctrlf {
+	pinctrl_uart0: uart0-pins {
+		allwinner,pins =    <ALLWINNER_H6_PF2_UART0_TX>,
+						    <ALLWINNER_H6_PF2_UART0_TX>;
+	};
+};
+
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart0>;
+	status = "okay";
+};
+
+
 
 
 

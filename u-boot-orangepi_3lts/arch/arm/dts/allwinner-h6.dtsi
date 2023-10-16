@@ -319,6 +319,7 @@
 		counter64: counter@20300 {
 			compatible = "allwinner, H6-v200-counter";
 			reg = <0x03009100  0xc>;
+			status  =   "disabled";
 			// clocks = <&coreclk 2>, <&refclk>;
 		};
 
@@ -425,12 +426,7 @@
 			#size-cells = <0>;
 			cell-index = <1>;
 			interrupts = <GIC_SPI 89 IRQ_TYPE_LEVEL_HIGH>;
-			status = "disabled";
 		};
-
-
-
-
 
 	};
 
