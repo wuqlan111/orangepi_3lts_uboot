@@ -6,8 +6,6 @@
 #include <dm.h>
 #include <log.h>
 #include <serial.h>
-#include <serial.h>
-#include <debug_uart.h>
 #include <clk.h>
 #include <errno.h>
 #include <asm/io.h>
@@ -463,7 +461,13 @@ void allwinner_serial_initialize(void)
 
 #ifdef CONFIG_DEBUG_UART_ALLWINNER
 
-#define  CCU_BASE_ADDR    0x03000000
+#include <debug_uart.h>
+
+#if defined(CONFIG_SPL_BUILD)
+static inline void _debug_uart_putc(int ch){}
+static inline void _debug_uart_init(void){}
+
+#else
 
 static inline void _debug_uart_putc(int ch)
 {
@@ -487,6 +491,9 @@ static inline void _debug_uart_init(void)
 
 	_allwinner_h6_serial_init(uart_reg, apb2_clk, CONFIG_BAUDRATE);
 
+	allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_DISABLE,  0);
+	allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  1);
+
 	char test[] = "heehe\r\n";
 	for (int32_t i =  0; i < strlen(test); i++) {
 		_debug_uart_putc(test[i]);
@@ -494,6 +501,7 @@ static inline void _debug_uart_init(void)
 
 
 }
+#endif
 
 
 DEBUG_UART_FUNCS

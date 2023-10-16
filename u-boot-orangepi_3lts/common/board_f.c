@@ -50,6 +50,8 @@
 #include <linux/errno.h>
 #include <linux/log2.h>
 
+#include <asm/arch/gpio.h>
+
 DECLARE_GLOBAL_DATA_PTR;
 
 /*
