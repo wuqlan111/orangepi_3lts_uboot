@@ -1695,8 +1695,11 @@ int fdtdec_setup(void)
 		setup_multi_dtb_fit();
 
 	ret = fdtdec_prepare_fdt(gd->fdt_blob);
-	if (!ret)
-		ret = fdtdec_board_setup(gd->fdt_blob);
+	if (!ret) {
+		_DBG_PRINTF("check fdt_addr -- %p success\n", gd->fdt_blob);
+		ret = fdtdec_board_setup(gd->fdt_blob);		
+	}
+
 	oftree_reset();
 
 	return ret;

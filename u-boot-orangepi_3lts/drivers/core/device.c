@@ -34,6 +34,32 @@
 #include <linux/list.h>
 #include <power-domain.h>
 
+
+static void printf_udev_info(const struct udevice * const dev)
+{
+	if (!dev) {
+		return;
+	}
+
+	_DBG_PRINTF("driver -- %s\n", (dev)->driver->name);
+	_DBG_PRINTF("name -- %s\n", (dev)->name);
+	_DBG_PRINTF("parent -- %s\n", (dev)->parent->name);
+	_DBG_PRINTF("flag -- 0x%08x\n", dev_get_flags(dev));
+	_DBG_PRINTF("drv_data -- 0x%016lx\n", (dev)->driver_data);
+	_DBG_PRINTF("seq -- %u\n", (dev)->seq_);
+	_DBG_PRINTF("uclass -- %s\n", (dev)->uclass->uc_drv->name);
+	_DBG_PRINTF("uclass_id -- %u\n", (dev)->uclass->uc_drv->id);
+
+#if CONFIG_IS_ENABLED(OF_REAL)
+	_DBG_PRINTF("of_offset -- 0x%x\n", (dev)->node_.of_offset);
+	_DBG_PRINTF("of_name -- %s\n", (dev)->node_.np->name);
+	_DBG_PRINTF("of_type -- %s\n", (dev)->node_.np->type);
+	_DBG_PRINTF("of_full_name -- %s\n", (dev)->node_.np->full_name);
+#endif	
+
+}
+
+
 DECLARE_GLOBAL_DATA_PTR;
 
 static int device_bind_common(struct udevice *parent, const struct driver *drv,
@@ -186,6 +212,8 @@ static int device_bind_common(struct udevice *parent, const struct driver *drv,
 		*devp = dev;
 
 	dev_or_flags(dev, DM_FLAG_BOUND);
+
+	printf_udev_info(dev);	
 
 	return 0;
 
@@ -482,9 +510,11 @@ int device_probe(struct udevice *dev)
 	const struct driver *drv;
 	int ret;
 
+	_DBG_PRINTF("start probe dev -- %s\n", dev->name);
 	if (!dev)
 		return -EINVAL;
 
+	_DBG_PRINTF("flag before probe -- 0x%08x\n", dev_get_flags(dev));
 	if (dev_get_flags(dev) & DM_FLAG_ACTIVATED)
 		return 0;
 
@@ -501,6 +531,7 @@ int device_probe(struct udevice *dev)
 
 	/* Ensure all parents are probed */
 	if (dev->parent) {
+		_DBG_PRINTF("probe parent -- %s\n", dev->parent->name);
 		ret = device_probe(dev->parent);
 		if (ret)
 			goto fail;
@@ -596,6 +627,8 @@ int device_probe(struct udevice *dev)
 				  dev->name, ret, errno_str(ret));
 	}
 
+
+	_DBG_PRINTF("flag after probe -- 0x%08x\n", dev_get_flags(dev));
 	ret = device_notify(dev, EVT_DM_POST_PROBE);
 	if (ret)
 		return ret;

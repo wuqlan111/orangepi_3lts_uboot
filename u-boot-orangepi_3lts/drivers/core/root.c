@@ -194,6 +194,7 @@ int dm_init(bool of_live)
 			return ret;
 		}
 	} else {
+		_DBG_PRINTF("bind root dev and driver\n");
 		ret = device_bind_by_name(NULL, false, &root_info,
 					  &DM_ROOT_NON_CONST);
 		if (ret)
@@ -367,6 +368,8 @@ static int dm_probe_devices(struct udevice *dev, bool pre_reloc_only)
 	struct udevice *child;
 	int ret;
 
+	_DBG_PRINTF("dm_probe_devices:\tdev -- %s, pre_reloc -- %d, flag -- 0x%08x\n",  
+						dev->name,  pre_reloc_only, dev_get_flags(dev));
 	if (pre_reloc_only &&
 	    (!ofnode_valid(node) || !ofnode_pre_reloc(node)) &&
 	    !(dev->driver->flags & DM_FLAG_PRE_RELOC))
@@ -379,6 +382,7 @@ static int dm_probe_devices(struct udevice *dev, bool pre_reloc_only)
 	}
 
 probe_children:
+	_DBG_PRINTF("probe children of %s\n", dev->name);
 	list_for_each_entry(child, &dev->child_head, sibling_node)
 		dm_probe_devices(child, pre_reloc_only);
 
@@ -424,6 +428,7 @@ int dm_init_and_scan(bool pre_reloc_only)
 {
 	int ret;
 
+	_DBG_PRINTF("dm_init_and_scan, pre_reloc -- %u\n", pre_reloc_only);
 	ret = dm_init(CONFIG_IS_ENABLED(OF_LIVE));
 	if (ret) {
 		debug("dm_init() failed: %d\n", ret);
