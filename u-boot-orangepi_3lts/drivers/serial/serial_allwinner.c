@@ -253,11 +253,15 @@ static int allwinner_h6_serial_enable_clk(struct udevice *dev)
 
 	ret = clk_get_by_index(dev, 0, &clk_uart);
 	if (ret) {
+		_DBG_PRINTF("get clk propory failed!\n");
 		return -EINVAL;		
 	}
 
 	clk_rate = clk_get_rate(&clk_uart);
-	if (!clk_rate) {
+
+	int64_t tmp_ret = clk_rate;
+	if (tmp_ret  <= 0) {
+		_DBG_PRINTF("get clk rate failed!\n");
 		return -EINVAL;		
 	}
 
@@ -281,6 +285,7 @@ static int  allwinner_h6_serial_probe(struct udevice *dev)
 
 	addr_base = dev_read_addr(dev);
 	if (addr_base == FDT_ADDR_T_NONE) {
+		_DBG_PRINTF("read addr failed!\n");
 		return -ENODEV;		
 	}
 

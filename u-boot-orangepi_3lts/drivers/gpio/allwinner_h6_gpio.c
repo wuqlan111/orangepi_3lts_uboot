@@ -242,6 +242,7 @@ U_BOOT_DRIVER(allwinner_h6_gpio) = {
 	.of_to_plat = allwinner_h6_gpio_of_to_plat,
 	.plat_auto	= sizeof(allwinner_h6_gpio_plat_t),
 	.probe		= allwinner_h6_gpio_probe,
+	.flags   =   DM_FLAG_PRE_RELOC,
 };
 
 #else

@@ -484,6 +484,25 @@ static  int32_t  _allwinner_h6_clk_get_rate(uint32_t clk_id, uint32_t base,  ulo
 
 }
 
+static void printf_clk_info(const struct clk * const clk)
+{
+    if (!clk) {
+        return;
+    }
+
+    if (clk->dev) {
+        _DBG_PRINTF("clk_dev -- %s\n", clk->dev->name? clk->dev->name: "null");        
+    } else {
+        _DBG_PRINTF("no clk dev!\n");
+    }
+
+    _DBG_PRINTF("clk_rate -- %lld\n", clk->rate);
+    _DBG_PRINTF("flags -- 0x%08x\n", clk->flags);
+    _DBG_PRINTF("enable -- %d\n", clk->enable_count);
+    _DBG_PRINTF("id -- %lu\n", clk->id);
+    _DBG_PRINTF("enable -- %lu\n", clk->data);
+}
+
 
 static ulong allwinner_h6_set_rate(struct clk *clk, ulong rate)
 {
@@ -506,6 +525,10 @@ static ulong allwinner_h6_get_rate(struct clk *clk)
     uint32_t  clk_id   =  clk->id;
 
     ret  =  _allwinner_h6_clk_get_rate(clk_id, plat->base, &rate);
+
+    if (ret) {
+        printf_clk_info(clk);
+    }
 
     return  ret ? -1: rate;
 
@@ -572,6 +595,7 @@ U_BOOT_DRIVER(allwinner_h6_clk) = {
 	.probe = allwinner_h6_clk_probe,
 	.plat_auto	= sizeof(allwinner_h6_clk_plat_t),
 	.ops = &allwinner_h6_ops,
+    .flags = DM_FLAG_PRE_RELOC,
 };
 
 

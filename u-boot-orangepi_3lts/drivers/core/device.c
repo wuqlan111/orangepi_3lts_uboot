@@ -535,8 +535,11 @@ int device_probe(struct udevice *dev)
 		return 0;
 
 	ret = device_notify(dev, EVT_DM_PRE_PROBE);
-	if (ret)
-		return ret;
+	if (ret) {
+		_DBG_PRINTF("device notify pre_probe event failed!\n");
+		return ret;		
+	}
+
 
 	drv = dev->driver;
 	assert(drv);
@@ -549,8 +552,11 @@ int device_probe(struct udevice *dev)
 	if (dev->parent) {
 		_DBG_PRINTF("probe parent -- %s\n", dev->parent->name);
 		ret = device_probe(dev->parent);
-		if (ret)
-			goto fail;
+		if (ret) {
+			_DBG_PRINTF("probe parent dev failed!\n");
+			goto fail;			
+		}
+
 
 		/*
 		 * The device might have already been probed during
@@ -558,8 +564,12 @@ int device_probe(struct udevice *dev)
 		 * (e.g. PCI bridge devices). Test the flags again
 		 * so that we don't mess up the device.
 		 */
-		if (dev_get_flags(dev) & DM_FLAG_ACTIVATED)
-			return 0;
+		if (dev_get_flags(dev) & DM_FLAG_ACTIVATED) {
+			_DBG_PRINTF("dev -- %s activiated after parent probe!\n",
+							dev->name? dev->name: "null");
+			return 0;			
+		}
+
 	}
 
 	dev_or_flags(dev, DM_FLAG_ACTIVATED);
@@ -597,22 +607,33 @@ int device_probe(struct udevice *dev)
 	if (CONFIG_IS_ENABLED(IOMMU) && dev->parent &&
 	    (device_get_uclass_id(dev) != UCLASS_IOMMU)) {
 		ret = dev_iommu_enable(dev);
-		if (ret)
-			goto fail;
+		if (ret) {
+			_DBG_PRINTF("enable dev iommu failed!\n");
+			goto fail;			
+		}
+
 	}
 
 	ret = device_get_dma_constraints(dev);
-	if (ret)
-		goto fail;
+	if (ret) {
+		_DBG_PRINTF("get device dma constraints failed!\n");
+		goto fail;		
+	}
+
 
 	ret = uclass_pre_probe_device(dev);
-	if (ret)
-		goto fail;
+	if (ret) {
+		_DBG_PRINTF("uclass pre probe device failed!\n");
+		goto fail;		
+	}
+
 
 	if (dev->parent && dev->parent->driver->child_pre_probe) {
 		ret = dev->parent->driver->child_pre_probe(dev);
-		if (ret)
-			goto fail;
+		if (ret) {
+			_DBG_PRINTF("child pre probe failed!\n");
+			goto fail;			
+		}
 	}
 
 	/* Only handle devices that have a valid ofnode */
@@ -622,19 +643,25 @@ int device_probe(struct udevice *dev)
 		 * properties
 		 */
 		ret = clk_set_defaults(dev, CLK_DEFAULTS_PRE);
-		if (ret)
-			goto fail;
+		if (ret) {
+			_DBG_PRINTF("set default clk failed!\n");
+			goto fail;			
+		}
 	}
 
 	if (drv->probe) {
 		ret = drv->probe(dev);
-		if (ret)
-			goto fail;
+		if (ret) {
+			_DBG_PRINTF("driver probe failed!\n");
+			goto fail;			
+		}
 	}
 
 	ret = uclass_post_probe_device(dev);
-	if (ret)
-		goto fail_uclass;
+	if (ret) {
+		_DBG_PRINTF("uclass post probe device failed!\n");
+		goto fail_uclass;		
+	}
 
 	if (dev->parent && device_get_uclass_id(dev) == UCLASS_PINCTRL) {
 		ret = pinctrl_select_state(dev, "default");
@@ -646,16 +673,20 @@ int device_probe(struct udevice *dev)
 
 	_DBG_PRINTF("flag after probe -- 0x%08x\n", dev_get_flags(dev));
 	ret = device_notify(dev, EVT_DM_POST_PROBE);
-	if (ret)
-		return ret;
+	if (ret) {
+		_DBG_PRINTF("device notify post probe failed!\n");
+		return ret;	
+	}
 
-	return 0;
+	return  0;
 fail_uclass:
 	if (device_remove(dev, DM_REMOVE_NORMAL)) {
 		dm_warn("%s: Device '%s' failed to remove on error path\n",
 			__func__, dev->name);
 	}
 fail:
+
+	_DBG_PRINTF("probe dev -- %s failed!\n", dev->name? dev->name: "null");
 	dev_bic_flags(dev, DM_FLAG_ACTIVATED);
 
 	device_free(dev);
