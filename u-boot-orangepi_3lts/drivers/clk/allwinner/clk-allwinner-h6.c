@@ -84,10 +84,6 @@ static  int32_t  _allwinner_h6_pll_set_rate(uint32_t clk_id,  ulong rate, uint32
             }
 
         }
-
-        if (find_best) {
-            break;
-        }
     }
 
 
@@ -116,8 +112,8 @@ static  int32_t  _allwinner_h6_pll_set_rate(uint32_t clk_id,  ulong rate, uint32
             flag  |=  (best_pll_m - 1);
             mask  |=  0x3;
             break;
-        case  ALLWINNER_PLL_VIDEO0:
-        case  ALLWINNER_PLL_VIDEO1: 
+        // case  ALLWINNER_PLL_VIDEO0:
+        // case  ALLWINNER_PLL_VIDEO1: 
             if (best_pll_m > 2) {
                 log_err("pll_m -- [%u], rate -- [%lu] invalid!", best_pll_m, rate);
                 return  -EINVAL;
@@ -174,7 +170,7 @@ static  int32_t  _allwinner_h6_pll_get_rate(uint32_t clk_id,  uint32_t base,  ul
     switch (clk_id) {
         case  ALLWINNER_PLL_CPUX:
             tmp_m  =  (clk_ctrl & GENMASK(17,  16)) >> 16;
-            pll_m  =  tmp_m  ==  2 ? 4: tmp_m + 1;
+            pll_m  =  1 << tmp_m;
             break;
 
         case  ALLWINNER_PLL_DDR0 ... ALLWINNER_PLL_GPU:
@@ -182,9 +178,21 @@ static  int32_t  _allwinner_h6_pll_get_rate(uint32_t clk_id,  uint32_t base,  ul
             tmp_m  =  clk_ctrl & 0x3;
             pll_m =  (tmp_m ==  0)  || (tmp_m == 3) ? tmp_m + 1: 2;
             break;
-        case  ALLWINNER_PLL_VIDEO0:
-        case  ALLWINNER_PLL_VIDEO1: 
+        case ALLWINNER_PLL_VIDEO0_4X ... ALLWINNER_PLL_VIDEO1_1X:
             pll_m  =  clk_ctrl &  BIT(1) ? 2: 1;
+            break;
+
+        case  ALLWINNER_PLL_AUDIO_4X:
+        case  ALLWINNER_PLL_AUDIO: {
+                uint32_t in_div  =  clk_ctrl & BIT(1)? 2: 1;
+                uint32_t out_div  =  clk_ctrl & BIT(0)? 2:  1;
+                uint32_t p = (clk_ctrl & GENMASK(21,  16) >> 16) + 1;
+                if (clk_id == ALLWINNER_PLL_AUDIO_4X) {
+                    pll_m  =  2 * in_div;
+                } else {
+                    pll_m  =  p * in_div * out_div;
+                }
+        }
             break;
         
         default:
@@ -192,7 +200,25 @@ static  int32_t  _allwinner_h6_pll_get_rate(uint32_t clk_id,  uint32_t base,  ul
             return  -EINVAL;
     }
 
-    *rate  =  ( ALLWINNER_PLLX_SRC_CLK * pll_n) / pll_m;
+    uint32_t  shift =  0;
+    switch (clk_id) {
+        case ALLWINNER_PLL_PERI0_1X:
+        case ALLWINNER_PLL_PERI1_1X:
+        case ALLWINNER_PLL_VIDEO0_1X:
+        case ALLWINNER_PLL_VIDEO1_1X:
+            shift =  2;
+            break;
+
+        case ALLWINNER_PLL_PERI0_2X:
+        case ALLWINNER_PLL_PERI1_2X:
+            shift  =  1;
+            break;
+    
+        default:
+            shift  =  0;
+    }
+
+    *rate  =  ( ALLWINNER_PLLX_SRC_CLK * pll_n) / ( pll_m * (1 << shift) );
 
     return  0;
 
@@ -214,7 +240,7 @@ static int32_t _allweinner_clk_psi_get_rate(uint32_t base,  ulong * rate)
     } else if (clk_src  ==  2) {
         src_rate  =  16000000;
     } else {
-        ret = _allwinner_h6_pll_get_rate(ALLWINNER_PLL_PERI0, base, &src_rate);
+        ret = _allwinner_h6_pll_get_rate(ALLWINNER_PLL_PERI0_1X, base, &src_rate);
         if (ret) {
             log_err("get pll_peri0 clk failed!\n");
             return  ret;
@@ -246,7 +272,7 @@ static int32_t _allweinner_clk_psi_set_rate(uint32_t base,  ulong rate,  ulong *
     } else if (clk_src  ==  2) {
         src_rate  =  16000000;
     } else {
-        ret = _allwinner_h6_pll_get_rate(ALLWINNER_PLL_PERI0, base, &src_rate);
+        ret = _allwinner_h6_pll_get_rate(ALLWINNER_PLL_PERI0_1X, base, &src_rate);
         if (ret) {
             log_err("get pll_peri0 clk failed!\n");
             return  ret;
@@ -336,7 +362,7 @@ static int32_t _allweinner_clk_ahbx_get_rate(uint32_t is_ahb3, uint32_t base, ul
     } else if (clk_src == 1) {
         src_rate  =  32768;
     } else if (clk_src ==  3) {
-        ret  =  _allwinner_h6_pll_get_rate(ALLWINNER_PLL_PERI0, base, &src_rate);
+        ret  =  _allwinner_h6_pll_get_rate(ALLWINNER_PLL_PERI0_1X, base, &src_rate);
     } else {
         ret  =  _allweinner_clk_psi_get_rate(base,  &src_rate);
     }
@@ -377,7 +403,7 @@ static int32_t _allweinner_clk_ahbx_set_rate(ulong rate, uint32_t is_ahb3, uint3
         src_rate  =  32768;
     } else if (clk_src ==  3) {
         ulong tmp_src_rate  =  0;
-        ret = _allwinner_h6_pll_get_rate(ALLWINNER_PLL_PERI0, base, &tmp_src_rate);
+        ret = _allwinner_h6_pll_get_rate(ALLWINNER_PLL_PERI0_1X, base, &tmp_src_rate);
         src_rate  =  tmp_src_rate;
     } else {
         ret  =  _allweinner_clk_psi_get_rate(base, &src_rate);
