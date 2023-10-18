@@ -176,11 +176,68 @@ char * allwinner_clk_2_str(const uint32_t clk)
 
 }
 
+typedef struct {
+    uint32_t  clk_id;
+    uint32_t  alias_clk;
+} clock_alias_t;
+
+#define  CLOCK_ALIAS_DEF(clk, src)  {.clk_id = (clk),  .alias_clk = (src), }
+
+
+static  const  clock_alias_t  _clock_alias[]  =  {
+    CLOCK_ALIAS_DEF(ALLWINNER_CLK_UART0,  ALLWINNER_CLK_APB2),
+    CLOCK_ALIAS_DEF(ALLWINNER_CLK_UART1,  ALLWINNER_CLK_APB2),
+    CLOCK_ALIAS_DEF(ALLWINNER_CLK_UART2,  ALLWINNER_CLK_APB2),
+    CLOCK_ALIAS_DEF(ALLWINNER_CLK_UART3,  ALLWINNER_CLK_APB2),
+    CLOCK_ALIAS_DEF(ALLWINNER_CLK_UARTX,  ALLWINNER_CLK_APB2),
+};
+
+
+static  const  clock_reg_cfg_t  _clock_configs[] = {
+    { .clk_id  = ALLWINNER_CLK_APB1,  .clk_select_vld = 0xf, .clk_select_bits = 2, .clk_select  = 
+    { CLOCK_OSC24M, CLOCK_CCU32K, ALLWINNER_CLK_PSI_AHB1_AHB2, ALLWINNER_PLL_PERI0_1X },  
+    .clk_n_bits = 2, .clk_m_bits = 2 },
+
+    { .clk_id  = ALLWINNER_CLK_APB2,  .clk_select_vld = 0xf, .clk_select_bits = 2, .clk_select  = 
+    { CLOCK_OSC24M, CLOCK_CCU32K, ALLWINNER_CLK_PSI_AHB1_AHB2, ALLWINNER_PLL_PERI0_1X },  
+    .clk_n_bits = 2, .clk_m_bits = 2 },
+
+    { .clk_id  = ALLWINNER_CLK_MBUS,  .clk_select_vld = 0xf, .clk_select_bits = 2, .clk_select  = 
+    { CLOCK_OSC24M, ALLWINNER_PLL_PERI0_2X, ALLWINNER_PLL_DDR0, ALLWINNER_PLL_PERI0_4X },  
+    .clk_n_bits = 0, .clk_m_bits = 3 },
+};
+
+const clock_reg_cfg_t * get_clk_config(const uint32_t clk_id)
+{
+    clock_reg_cfg_t * ret = NULL;
+    const  uint32_t  array_size  =  ARRAY_SIZE(_clock_configs);
+    for (uint32_t i  =  0;  i  < array_size; i++) {
+        if (_clock_configs[i].clk_id == clk_id) {
+            ret  =  &_clock_configs[i];
+            break;
+        }
+    }
+
+    return  ret;
+
+}
 
 
 
+int32_t  get_clk_alias(const uint32_t clk_id,  uint32_t * const alias_clk)
+{
+    int32_t ret  =  -1;
+    const  uint32_t  array_size  =  ARRAY_SIZE(_clock_alias);
+    for (uint32_t i  =  0;  i  < array_size; i++) {
+        if (_clock_alias[i].clk_id == clk_id) {
+            *alias_clk = _clock_alias[i].alias_clk;
+            ret  =  0;
+            break;
+        }
+    }
 
-
+    return  ret;
+}
 
 
 
