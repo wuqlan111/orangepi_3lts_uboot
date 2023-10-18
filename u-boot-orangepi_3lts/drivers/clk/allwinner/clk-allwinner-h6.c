@@ -475,14 +475,16 @@ static int32_t _allweinner_clk_ahbx_set_rate(ulong rate, uint32_t is_ahb3, uint3
 
 static int32_t _allwinner_h6_get_clk_by_cfg(uint32_t clk_id,  uint32_t base,  ulong * rate)
 {
+    _DBG_PRINTF("_allwinner_h6_get_clk_by_cfg:\tclk_id -- %u,\tbase -- 0x%08x\n",  clk_id,  base);
     int32_t  ret  =  0;
-    uint32_t  * reg_addr   =  (uint32_t *)(base + allwinner_clk_regs_offset[clk_id]);
-    const uint32_t flag = readl(reg_addr);
     const clock_reg_cfg_t * reg_cfg = get_clk_config(clk_id);
-    if (!reg_cfg) {
+    if (reg_cfg == NULL) {
+        _DBG_PRINTF("get_clk_config failed!\n");
         return  -1;
     }
 
+    uint32_t  * reg_addr   =  (uint32_t *)(base + allwinner_clk_regs_offset[clk_id]);
+    const uint32_t flag = readl(reg_addr);    
     const uint32_t  clk_select_max  =  reg_cfg->clk_select_bits? GENMASK(reg_cfg->clk_select_bits - 1,  0):  0;
     const uint32_t  clk_select  = (flag >> 24) & clk_select_max;
     if (!clk_select_max || !(( 1 << clk_select) & (reg_cfg->clk_select_vld)) ) {
@@ -490,6 +492,7 @@ static int32_t _allwinner_h6_get_clk_by_cfg(uint32_t clk_id,  uint32_t base,  ul
         return  -1;
     }
 
+    _DBG_PRINTF("clk_select -- %u\n", clk_select);
     const  uint32_t  clk_m_max  =  reg_cfg->clk_m_bits ? GENMASK(reg_cfg->clk_m_bits - 1,  0): 0;
     const  uint32_t  clk_n_max  =  reg_cfg->clk_n_bits ? GENMASK(reg_cfg->clk_n_bits - 1,  0): 0;
     const  uint32_t  clk_n  =  clk_n_max?  ( flag >> 8 ) & clk_n_max: 0;
@@ -500,14 +503,15 @@ static int32_t _allwinner_h6_get_clk_by_cfg(uint32_t clk_id,  uint32_t base,  ul
     if (clk_n_max && clk_m_max) {
         factor  =  (1 << clk_n) * (clk_m + 1);
     } else {
-        factor  =  clk_n_max ? 1 << clk_n:  clk_m;
+        factor  =  clk_n_max ? 1 << clk_n:  (clk_m + 1);
     }
 
-    // _DBG_PRINTF("reg_addr -- 0x%p,\tclk_flag ==  %#x\n", reg_addr,  flag);
+    _DBG_PRINTF("reg_addr -- 0x%p,\tclk_flag ==  %#x\n", reg_addr,  flag);
     ulong src_rate =  0;
+    ret  =  0;
     if (reg_cfg->clk_select[clk_select] == CLOCK_OSC24M) {
         src_rate  =  24000000;
-    } if (reg_cfg->clk_select[clk_select] == CLOCK_CCU32K) {
+    } else if (reg_cfg->clk_select[clk_select] == CLOCK_CCU32K) {
         src_rate  =  32768;
     } else {
         ret  =  _allwinner_h6_pll_get_rate(reg_cfg->clk_select[clk_select], base,  &src_rate);
@@ -520,6 +524,8 @@ static int32_t _allwinner_h6_get_clk_by_cfg(uint32_t clk_id,  uint32_t base,  ul
 
     *rate  =  src_rate / factor;
 
+    _DBG_PRINTF("_allwinner_h6_get_clk_by_cfg:\trate = %lu\n", *rate);
+
     return   ret;
 
 }
@@ -528,12 +534,12 @@ static int32_t _allwinner_h6_get_clk_by_cfg(uint32_t clk_id,  uint32_t base,  ul
 static int32_t _allwinner_h6_set_clk_by_cfg(uint32_t clk_id,  ulong rate, uint32_t base,  ulong * new_rate)
 {
     int32_t  ret  =  0;
-    uint32_t  * reg_addr   =  (uint32_t *)(base + allwinner_clk_regs_offset[clk_id]);
     const clock_reg_cfg_t * reg_cfg = get_clk_config(clk_id);
     if (!reg_cfg) {
         return  -1;
     }
 
+    uint32_t  * reg_addr   =  (uint32_t *)(base + allwinner_clk_regs_offset[clk_id]);
     const uint32_t  clk_select_max  =  reg_cfg->clk_select_bits? GENMASK(reg_cfg->clk_select_bits - 1,  0):  0;
     if (!clk_select_max || !reg_cfg->clk_select_vld) {
         _DBG_PRINTF("clk select bits invalid!\n");
@@ -619,8 +625,8 @@ static int32_t _allwinner_h6_set_clk_by_cfg(uint32_t clk_id,  ulong rate, uint32
 
 static int32_t _allwinner_h6_get_clk_by_alias(uint32_t clk_id, uint32_t base,  ulong * rate)
 {
+    _DBG_PRINTF("_allwinner_h6_get_clk_by_alias:\tclk_id -- %u\n", clk_id);
     int32_t  ret  =  0;
-    uint32_t  * reg_addr   =  (uint32_t *)(base + allwinner_clk_regs_offset[clk_id]);
     uint32_t  alias_clk =  0;
 
     if (get_clk_alias(clk_id,  &alias_clk)) {
@@ -667,12 +673,14 @@ static  int32_t  _allwinner_h6_clk_get_rate(uint32_t clk_id, uint32_t base,  ulo
 {
     int32_t  ret  =  0;
 
+    _DBG_PRINTF("_allwinner_h6_clk_get_rate:\tclk_id -- %u,\tbase -- 0x%08x\n", clk_id,  base);
     if (clk_id <= ALLWINNER_PLL_MAX) {
         ret  =  _allwinner_h6_pll_get_rate(clk_id,  base,  rate);
     } else if ( (clk_id == ALLWINNER_CLK_PSI_AHB1_AHB2) || (clk_id == ALLWINNER_CLK_AHB3)) {
         uint32_t is_ahb3 = clk_id == ALLWINNER_CLK_AHB3? 1:  0; 
         ret  =  _allweinner_clk_ahbx_get_rate(is_ahb3, base,  rate);
     } else if (!_allwinner_h6_get_clk_by_cfg(clk_id,  base,  rate)){
+        ret  =  0;
         _DBG_PRINTF("get clk rate by reg cfg success\n");
     } else {
         ret  =  _allwinner_h6_get_clk_by_alias(clk_id,  base,  rate);
@@ -722,6 +730,7 @@ static ulong allwinner_h6_get_rate(struct clk *clk)
     allwinner_h6_clk_plat_t  * plat  =  dev_get_plat(clk->dev);
     uint32_t  clk_id   =  clk->id;
 
+    _DBG_PRINTF("allwinner_h6_get_rate:\tclk_id -- %u\n", clk->id);
     ret  =  _allwinner_h6_clk_get_rate(clk_id, plat->base, &rate);
 
     if (ret) {

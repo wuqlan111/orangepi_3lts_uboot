@@ -251,12 +251,14 @@ static int allwinner_h6_serial_enable_clk(struct udevice *dev)
 	ulong clk_rate =  0;
 	int ret =  0;
 
+	_DBG_PRINTF("start get clk by index\n");
 	ret = clk_get_by_index(dev, 0, &clk_uart);
 	if (ret) {
 		_DBG_PRINTF("get clk propory failed!\n");
 		return -EINVAL;		
 	}
 
+	_DBG_PRINTF("start get clk rate\n");
 	clk_rate = clk_get_rate(&clk_uart);
 
 	_DBG_PRINTF("uart_clk -- %lu\n", clk_rate);
@@ -279,6 +281,8 @@ static int  allwinner_h6_serial_probe(struct udevice *dev)
 	int ret  =  0;
 	fdt_addr_t addr_base  =  0;
 
+	_DBG_PRINTF("allwinner_h6_serial_probe\n");
+
 	allwinner_h6_uart_plat_t *plat = dev_get_plat(dev);
 	allwinner_h6_uart_priv_t *priv = dev_get_priv(dev);
 	assert(plat != NULL);
@@ -292,8 +296,10 @@ static int  allwinner_h6_serial_probe(struct udevice *dev)
 
 	plat->base = (uint32_t)addr_base;
 
+	_DBG_PRINTF("start enable serial clk\n");
 	ret = allwinner_h6_serial_enable_clk(dev);
 	if (ret) {
+		_DBG_PRINTF("enable serial clk failed!\n");
 		return ret;
 	}
 
@@ -477,12 +483,14 @@ static inline void _debug_uart_init(void){}
 
 static inline void _debug_uart_putc(int ch)
 {
+
 	allwinner_h6_uart_t * uart_reg = (allwinner_h6_uart_t *)CONFIG_VAL(DEBUG_UART_BASE);
 
-	while (!(readl(&uart_reg->lsr) & ALLWINNER_UART_LSR_THRE))
-		;
+	while ( !(readl(&uart_reg->lsr) & ALLWINNER_UART_LSR_THRE) )  ;
 
-	writel(ch, &uart_reg->thr);
+	clrbits_32(&uart_reg->lcr,  ALLWINNER_UART_LCR_DLAB);
+	writel(ch,  &uart_reg->thr);
+	
 }
 
 

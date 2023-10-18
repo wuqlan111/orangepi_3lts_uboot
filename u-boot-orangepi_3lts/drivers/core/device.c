@@ -614,6 +614,7 @@ int device_probe(struct udevice *dev)
 
 	}
 
+
 	ret = device_get_dma_constraints(dev);
 	if (ret) {
 		_DBG_PRINTF("get device dma constraints failed!\n");
@@ -642,6 +643,7 @@ int device_probe(struct udevice *dev)
 		 * Process 'assigned-{clocks/clock-parents/clock-rates}'
 		 * properties
 		 */
+		_DBG_PRINTF("clk_set_defaults\n");
 		ret = clk_set_defaults(dev, CLK_DEFAULTS_PRE);
 		if (ret) {
 			_DBG_PRINTF("set default clk failed!\n");
@@ -650,11 +652,14 @@ int device_probe(struct udevice *dev)
 	}
 
 	if (drv->probe) {
+		_DBG_PRINTF("drv -- %s probe dev start\n", drv->name);
 		ret = drv->probe(dev);
 		if (ret) {
 			_DBG_PRINTF("driver probe failed!\n");
 			goto fail;			
 		}
+
+		_DBG_PRINTF("drv -- %s probe dev end\n", drv->name);
 	}
 
 	ret = uclass_post_probe_device(dev);
@@ -671,7 +676,7 @@ int device_probe(struct udevice *dev)
 	}
 
 
-	_DBG_PRINTF("flag after probe -- 0x%08x\n", dev_get_flags(dev));
+	_DBG_PRINTF("dev %s flag after probe -- 0x%08x\n",  dev->name, dev_get_flags(dev));
 	ret = device_notify(dev, EVT_DM_POST_PROBE);
 	if (ret) {
 		_DBG_PRINTF("device notify post probe failed!\n");

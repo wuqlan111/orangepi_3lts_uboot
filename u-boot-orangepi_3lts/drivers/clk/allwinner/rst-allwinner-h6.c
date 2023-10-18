@@ -209,6 +209,7 @@ static  const  clock_reg_cfg_t  _clock_configs[] = {
 
 const clock_reg_cfg_t * get_clk_config(const uint32_t clk_id)
 {
+    _DBG_PRINTF("get_clk_config:\tclk_id -- %u\n", clk_id);
     clock_reg_cfg_t * ret = NULL;
     const  uint32_t  array_size  =  ARRAY_SIZE(_clock_configs);
     for (uint32_t i  =  0;  i  < array_size; i++) {
@@ -217,6 +218,8 @@ const clock_reg_cfg_t * get_clk_config(const uint32_t clk_id)
             break;
         }
     }
+
+    _DBG_PRINTF("get_clk_config:\tret = 0x%p\n", ret);
 
     return  ret;
 
