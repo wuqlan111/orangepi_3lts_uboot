@@ -251,7 +251,7 @@
 			ngpios = <ALLWINNER_H6_GPIOM_NUMBER>;
 		};
 
-		coreclk: ccu@40023800 {
+		coreclk: ccu@03001000 {
 			#clock-cells = <1>;
 			compatible = "allwinner,h6-v200-ccu", "allwinner,h6-ccu";
 			reg = <0x03001000  0x1000>;
@@ -342,7 +342,7 @@
 			compatible = "allwinner, H6-v200-uart";
 			reg = <0x05000000   0xb0>;
 			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&coreclk  ALLWINNER_CLK_UARTX>;
+			clocks = <&coreclk  ALLWINNER_CLK_UART0>;
 			status = "disabled";
 		};
 
@@ -350,7 +350,7 @@
 			compatible = "allwinner, H6-v200-uart";
 			reg = <0x05000400   0xb0>;
 			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&coreclk  ALLWINNER_CLK_UARTX>;
+			clocks = <&coreclk  ALLWINNER_CLK_UART1>;
 			status = "disabled";
 		};
 
@@ -358,7 +358,7 @@
 			compatible = "allwinner, H6-v200-uart";
 			reg = <0x05000800   0xb0>;
 			interrupts = <GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&coreclk   ALLWINNER_CLK_UARTX>;
+			clocks = <&coreclk   ALLWINNER_CLK_UART2>;
 			status = "disabled";
 		};
 
@@ -366,7 +366,7 @@
 			compatible = "allwinner, H6-v200-uart";
 			reg = <0x05000c00   0xb0>;
 			interrupts = <GIC_SPI 35 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&coreclk   ALLWINNER_CLK_UARTX>;
+			clocks = <&coreclk   ALLWINNER_CLK_UART3>;
 			status = "disabled";
 		};
 
@@ -374,7 +374,7 @@
 			compatible = "allwinner, H6-v200-uart";
 			reg = <0x07080000   0xb0>;
 			interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&coreclk   ALLWINNER_CLK_UARTX>;
+			clocks = <&coreclk   ALLWINNER_CLK_UART0>;
 			status = "disabled";
 		};
 

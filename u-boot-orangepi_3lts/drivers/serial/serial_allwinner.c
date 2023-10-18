@@ -259,6 +259,7 @@ static int allwinner_h6_serial_enable_clk(struct udevice *dev)
 
 	clk_rate = clk_get_rate(&clk_uart);
 
+	_DBG_PRINTF("uart_clk -- %lu\n", clk_rate);
 	int64_t tmp_ret = clk_rate;
 	if (tmp_ret  <= 0) {
 		_DBG_PRINTF("get clk rate failed!\n");

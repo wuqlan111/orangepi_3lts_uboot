@@ -503,11 +503,14 @@ static int32_t _allwinner_h6_get_clk_by_cfg(uint32_t clk_id,  uint32_t base,  ul
         factor  =  clk_n_max ? 1 << clk_n:  clk_m;
     }
 
+    // _DBG_PRINTF("reg_addr -- 0x%p,\tclk_flag ==  %#x\n", reg_addr,  flag);
     ulong src_rate =  0;
     if (reg_cfg->clk_select[clk_select] == CLOCK_OSC24M) {
         src_rate  =  24000000;
+    } if (reg_cfg->clk_select[clk_select] == CLOCK_CCU32K) {
+        src_rate  =  32768;
     } else {
-        ret  =  _allwinner_h6_pll_get_rate(clk_id, base,  &src_rate);
+        ret  =  _allwinner_h6_pll_get_rate(reg_cfg->clk_select[clk_select], base,  &src_rate);
     }
 
     if (ret) {
@@ -557,6 +560,8 @@ static int32_t _allwinner_h6_set_clk_by_cfg(uint32_t clk_id,  ulong rate, uint32
 
         if (reg_cfg->clk_select[tmp_select] == CLOCK_OSC24M) {
             src_rate  =  24000000;
+        } else if (reg_cfg->clk_select[tmp_select] == CLOCK_CCU32K) {
+            src_rate  =  32768;
         } else {
             ret  =  _allwinner_h6_pll_get_rate(reg_cfg->clk_select[tmp_select], base,  &src_rate);
             if (ret) {
