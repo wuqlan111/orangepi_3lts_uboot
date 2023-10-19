@@ -19,6 +19,9 @@
 
 #define  ALLWINNER_H6_SMHCX_BASE            (0x04020000u)
 
+#define  ALLWINNER_H6_DRAM_BASE             (0x40000000u)
+#define  ALLWINNER_H6_DRAM_MAX_SIZE         (0xc0000000u)
+
 
 
 int32_t  wait_reg32_flag(uint32_t addr, uint32_t mask, uint32_t val, uint32_t timeout);

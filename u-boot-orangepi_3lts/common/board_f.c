@@ -382,6 +382,9 @@ static int setup_dest_addr(void)
 	gd->relocaddr = gd->ram_top;
 	debug("Ram top: %08llX\n", (unsigned long long)gd->ram_top);
 
+	_DBG_PRINTF("ram:\tbase -- 0x%p,\tsize -- 0x%llx,\ttop -- 0x%p\n", gd->ram_base,
+				gd->ram_size,  gd->ram_top);
+
 	return arch_setup_dest_addr();
 }
 
@@ -403,6 +406,7 @@ static int reserve_pram(void)
 static int reserve_round_4k(void)
 {
 	gd->relocaddr &= ~(4096 - 1);
+	_DBG_PRINTF("relocaddr -- 0x%p\n",  gd->relocaddr);
 	return 0;
 }
 
@@ -461,6 +465,8 @@ static int reserve_uboot(void)
 
 	gd->start_addr_sp = gd->relocaddr;
 
+	_DBG_PRINTF("start_addr_sp -- 0x%p\n",  gd->start_addr_sp);
+
 	return 0;
 }
 
@@ -513,13 +519,18 @@ static int reserve_malloc(void)
 /* (permanently) allocate a Board Info struct */
 static int reserve_board(void)
 {
+	_DBG_PRINTF("reserve_board\n");
 	if (!gd->bd) {
+		_DBG_PRINTF("ori_sp -- 0x%p\n",  gd->start_addr_sp);
 		gd->start_addr_sp = reserve_stack_aligned(sizeof(struct bd_info));
+		_DBG_PRINTF("new_sp -- 0x%p\n",  gd->start_addr_sp);
 		gd->bd = (struct bd_info *)map_sysmem(gd->start_addr_sp,
 						      sizeof(struct bd_info));
 		memset(gd->bd, '\0', sizeof(struct bd_info));
 		debug("Reserving %zu Bytes for Board Info at: %08lx\n",
 		      sizeof(struct bd_info), gd->start_addr_sp);
+
+		_DBG_PRINTF("new_sp -- 0x%p,\tnew_bd -- 0x%p\n", gd->start_addr_sp, gd->bd);
 	}
 	return 0;
 }
@@ -530,6 +541,7 @@ static int reserve_global_data(void)
 	gd->new_gd = (gd_t *)map_sysmem(gd->start_addr_sp, sizeof(gd_t));
 	debug("Reserving %zu Bytes for Global Data at: %08lx\n",
 	      sizeof(gd_t), gd->start_addr_sp);
+	_DBG_PRINTF("new_sp -- 0x%p,\tnew_gd -- 0x%p\n", gd->start_addr_sp, gd->new_gd);
 	return 0;
 }
 

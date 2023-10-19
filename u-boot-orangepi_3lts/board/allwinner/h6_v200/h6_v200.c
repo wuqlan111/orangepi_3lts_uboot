@@ -33,5 +33,11 @@ int32_t board_mmc_init(struct bd_info *bis)
 }
 
 
+int32_t dram_init(void)
+{
+    gd->ram_size = 0x80000000;
 
+    _DBG_PRINTF("%u MB\n",  gd->ram_size >> 20 );
+	return  0;
+}
 

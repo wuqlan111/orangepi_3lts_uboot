@@ -35,12 +35,15 @@ long get_ram_size(long *base, long maxsize)
 	long           size;
 	int            i = 0;
 
+	_DBG_PRINTF("get_ram_size:\tbase -- 0x%p,\tmaxsize -- %ld\n", base, maxsize);
 	for (cnt = (maxsize / sizeof(long)) >> 1; cnt > 0; cnt >>= 1) {
 		addr = base + cnt;	/* pointer arith! */
 		sync();
 		save[i++] = *addr;
 		sync();
 		*addr = ~cnt;
+		_DBG_PRINTF("addr -- 0x%p\t,save_val -- %ld,\tnew_val -- %ld,\tcnt -- %ld\n",
+					addr,  save[i-1], *addr,  cnt);
 	}
 
 	addr = base;
@@ -50,6 +53,8 @@ long get_ram_size(long *base, long maxsize)
 	*addr = 0;
 
 	sync();
+	_DBG_PRINTF("val -- %ld,\tsave_base -- %ld,\taddr_data -- %ld\n", 
+								val, save_base, *addr);
 	if ((val = *addr) != 0) {
 		/* Restore the original data before leaving the function. */
 		sync();
@@ -66,6 +71,8 @@ long get_ram_size(long *base, long maxsize)
 		addr = base + cnt;	/* pointer arith! */
 		val = *addr;
 		*addr = save[--i];
+		_DBG_PRINTF("addr -- 0x%p\t,save_val -- %ld,\tnew_val -- %ld,\tcnt -- %ld\n",
+				addr,  save[i], val,  cnt);
 		if (val != ~cnt) {
 			size = cnt * sizeof(long);
 			/*

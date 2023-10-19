@@ -24,15 +24,5 @@ int32_t print_cpuinfo(void)
 
 #endif
 
-int32_t dram_init(void)
-{
-
-    return  0;
-
-}
-
-
-
-
 
 
