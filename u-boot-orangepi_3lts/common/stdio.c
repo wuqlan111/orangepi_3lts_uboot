@@ -79,6 +79,7 @@ static inline void nulldev_register(void) {}
 
 static void stdio_serial_putc(struct stdio_dev *dev, const char c)
 {
+	_DBG_PRINTF("stdio_serial_putc\n");
 	serial_putc(c);
 }
 
@@ -90,17 +91,20 @@ static void stdio_serial_puts(struct stdio_dev *dev, const char *s)
 #ifdef CONFIG_CONSOLE_FLUSH_SUPPORT
 static void stdio_serial_flush(struct stdio_dev *dev)
 {
+	_DBG_PRINTF("stdio_serial_flush\n");
 	serial_flush();
 }
 #endif
 
 static int stdio_serial_getc(struct stdio_dev *dev)
 {
+	_DBG_PRINTF("stdio_serial_getc\n");	
 	return serial_getc();
 }
 
 static int stdio_serial_tstc(struct stdio_dev *dev)
 {
+	_DBG_PRINTF("stdio_serial_tstc\n");
 	return serial_tstc();
 }
 

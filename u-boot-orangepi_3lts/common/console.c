@@ -22,6 +22,7 @@
 #include <watchdog.h>
 #include <asm/global_data.h>
 #include <linux/delay.h>
+#include <log.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -300,11 +301,13 @@ static int console_tstc(int file)
 	struct stdio_dev *dev;
 	int prev;
 
+	_DBG_PRINTF("console_tstc\n");
 	prev = disable_ctrlc(1);
 	for_each_console_dev(i, file, dev) {
 		if (dev->tstc != NULL) {
 			ret = dev->tstc(dev);
 			if (ret > 0) {
+				_DBG_PRINTF("tstcdev -- %s\n", tstcdev->name);
 				tstcdev = dev;
 				disable_ctrlc(prev);
 				return ret;
@@ -512,8 +515,9 @@ int fgetc(int file)
 					return console_getc(file);
 				console_tstc(file);
 			} else {
-				if (console_tstc(file))
-					return console_getc(file);
+				if (console_tstc(file)) {
+					return console_getc(file);					
+				}
 			}
 
 			/*
@@ -593,10 +597,12 @@ int getchar(void)
 
 	if (gd->flags & GD_FLG_DEVINIT) {
 		/* Get from the standard input */
+		_DBG_PRINTF("start fgetc\n");
 		return fgetc(stdin);
 	}
 
 	/* Send directly to the handler */
+	_DBG_PRINTF("start serial_getc\n");
 	return serial_getc();
 }
 

@@ -488,7 +488,9 @@ int cli_readline_into_buffer(const char *const prompt, char *buffer,
 			return -2;	/* timed out */
 		schedule();	/* Trigger watchdog, if needed */
 
+		_DBG_PRINTF("start get char\n");
 		c = getchar();
+		_DBG_PRINTF("char -- %#x\n", c);
 
 		/*
 		 * Special character handling

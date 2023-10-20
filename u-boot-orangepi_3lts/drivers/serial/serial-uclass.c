@@ -187,6 +187,7 @@ int serial_initialize(void)
 
 static void _serial_putc(struct udevice *dev, char ch)
 {
+	_DBG_PRINTF("_serial_putc\n");
 	struct dm_serial_ops *ops = serial_get_ops(dev);
 	int err;
 
@@ -241,6 +242,7 @@ static void _serial_puts(struct udevice *dev, const char *str)
 #ifdef CONFIG_CONSOLE_FLUSH_SUPPORT
 static void _serial_flush(struct udevice *dev)
 {
+	_DBG_PRINTF("_serial_flush\n");
 	struct dm_serial_ops *ops = serial_get_ops(dev);
 
 	if (!ops->pending)
@@ -252,6 +254,7 @@ static void _serial_flush(struct udevice *dev)
 
 static int __serial_getc(struct udevice *dev)
 {
+	_DBG_PRINTF("__serial_getc");
 	struct dm_serial_ops *ops = serial_get_ops(dev);
 	int err;
 
@@ -266,6 +269,7 @@ static int __serial_getc(struct udevice *dev)
 
 static int __serial_tstc(struct udevice *dev)
 {
+	_DBG_PRINTF("__serial_tstc\n");
 	struct dm_serial_ops *ops = serial_get_ops(dev);
 
 	if (ops->pending)
