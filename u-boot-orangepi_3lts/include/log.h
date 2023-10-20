@@ -690,4 +690,13 @@ static inline int log_get_default_format(void)
 #define  _DBG_PRINTF(fmt, args...)   printf("[%s: %u] - " fmt, __FILE__, __LINE__, ##args)
 #define  _DBG_PRINTF_LINE()            printf("\n\n\n")
 
+#define  _DBG_DUMP_REGS()    {       \
+				uint64_t  sp, pc, lr;      \
+				sp = pc  = lr  =  0;            \
+				__asm__ ( "mov  %0, sp\n"       \
+						  "adr  %1, #0\n"     \
+						  "mov  %2, lr\n":"=r"(sp), "=r"(pc), "=r"(lr)::"x10", "x11", "x12"); \
+				_DBG_PRINTF("sp = %#x,\tpc = %#x,\tlr = %#x\n", sp, pc, lr);     \
+		}
+
 #endif

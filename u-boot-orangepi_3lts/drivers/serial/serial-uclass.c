@@ -19,6 +19,7 @@
 #include <dm/device-internal.h>
 #include <dm/of_access.h>
 #include <linux/delay.h>
+#include <log.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -76,6 +77,7 @@ static int serial_check_stdout(const void *blob, struct udevice **devp)
 
 static void serial_find_console_or_panic(void)
 {
+	_DBG_PRINTF("serial_find_console_or_panic\n");
 	const void *blob = gd->fdt_blob;
 	struct udevice *dev;
 #ifdef CONFIG_SERIAL_SEARCH_ALL
@@ -161,11 +163,19 @@ static void serial_find_console_or_panic(void)
 /* Called prior to relocation */
 int serial_init(void)
 {
+
 #if CONFIG_IS_ENABLED(SERIAL_PRESENT)
 	serial_find_console_or_panic();
-	gd->flags |= GD_FLG_SERIAL_READY;
+	if (gd->cur_serial_dev) {
+		_DBG_PRINTF("gd->cur_serial_dev -- %s\n",  gd->cur_serial_dev->name? 
+						gd->cur_serial_dev->name: "null");
+	}
+
+	//we use debug uart, so disable
+	// gd->flags |= GD_FLG_SERIAL_READY;
 	serial_setbrg();
 #endif
+	_DBG_PRINTF("gd->flags -- %#x\n",  gd->flags);
 
 	return 0;
 }
@@ -360,6 +370,8 @@ int serial_tstc(void)
 void serial_setbrg(void)
 {
 	struct dm_serial_ops *ops;
+
+	_DBG_PRINTF("dm_serial_setbrg:\tbaudrate -- %u\n",  gd->baudrate);
 
 	if (!gd->cur_serial_dev)
 		return;

@@ -508,12 +508,6 @@ static inline void _debug_uart_init(void)
 	allwinner_gpio_output_value( GPIOL, 4,  GPIO_PULL_DISABLE,  0);
 	allwinner_gpio_output_value( GPIOL, 7,  GPIO_PULL_DISABLE,  1);
 
-	char test[] = "heehe\r\n";
-	for (int32_t i =  0; i < strlen(test); i++) {
-		_debug_uart_putc(test[i]);
-	}
-
-
 }
 #endif
 
