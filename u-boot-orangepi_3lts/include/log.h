@@ -686,9 +686,20 @@ static inline int log_get_default_format(void)
 	       (IS_ENABLED(CONFIG_LOGF_FUNC) ? BIT(LOGF_FUNC) : 0);
 }
 
-
-#define  _DBG_PRINTF(fmt, args...)   printf("[%s: %u] - " fmt, __FILE__, __LINE__, ##args)
+/*
+#ifdef CONFIG_DEBUG_UART_ALLWINNER
+#include <debug_uart.h>
+#define  _DBG_PRINTF(fmt, args...)     {    \
+		char tmp_buf[2048] = {0};          \
+		sprintf(tmp_buf, "[%s: %u] - " fmt, __FILE__, __LINE__, ##args);  \
+		printascii(tmp_buf);                 \
+}
+#define  _DBG_PRINTF_LINE()            printascii("\n\n\n")
+*/
+// #else
+#define  _DBG_PRINTF(fmt, args...)     printf("[%s: %u] - " fmt, __FILE__, __LINE__, ##args)
 #define  _DBG_PRINTF_LINE()            printf("\n\n\n")
+// #endif
 
 #define  _DBG_DUMP_REGS()    {       \
 				uint64_t  sp, pc, lr;      \

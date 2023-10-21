@@ -172,7 +172,7 @@ int serial_init(void)
 	}
 
 	//we use debug uart, so disable
-	// gd->flags |= GD_FLG_SERIAL_READY;
+	gd->flags |= GD_FLG_SERIAL_READY;
 	serial_setbrg();
 #endif
 	_DBG_PRINTF("gd->flags -- %#x\n",  gd->flags);
@@ -197,7 +197,6 @@ int serial_initialize(void)
 
 static void _serial_putc(struct udevice *dev, char ch)
 {
-	_DBG_PRINTF("_serial_putc\n");
 	struct dm_serial_ops *ops = serial_get_ops(dev);
 	int err;
 
@@ -207,6 +206,7 @@ static void _serial_putc(struct udevice *dev, char ch)
 	do {
 		err = ops->putc(dev, ch);
 	} while (err == -EAGAIN);
+
 }
 
 static int __serial_puts(struct udevice *dev, const char *str, size_t len)
@@ -264,7 +264,7 @@ static void _serial_flush(struct udevice *dev)
 
 static int __serial_getc(struct udevice *dev)
 {
-	_DBG_PRINTF("__serial_getc");
+
 	struct dm_serial_ops *ops = serial_get_ops(dev);
 	int err;
 
@@ -279,7 +279,6 @@ static int __serial_getc(struct udevice *dev)
 
 static int __serial_tstc(struct udevice *dev)
 {
-	_DBG_PRINTF("__serial_tstc\n");
 	struct dm_serial_ops *ops = serial_get_ops(dev);
 
 	if (ops->pending)

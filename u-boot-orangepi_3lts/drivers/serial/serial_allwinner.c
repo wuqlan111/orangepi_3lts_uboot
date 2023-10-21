@@ -11,6 +11,7 @@
 #include <asm/io.h>
 #include <asm/types.h>
 #include <dm/device_compat.h>
+#include <linux/kernel.h>
 #include <asm/arch/gpio.h>
 #include <dm/device.h>
 #include "serial_allwinner.h"
@@ -36,14 +37,14 @@ typedef struct {
 	u32  lsr;
 	u32  msr;
 	u32  sch;
-    u32  rsv1[24];
+    u32  rsv1[23];
 	u32  usr;
 	u32  tfl;
 	u32  rfl;
 	u32  hsk;
-    u32  rsv2[7];
+    u32  rsv2[6];
 	u32  halt;
-    u32  rsv3[3];
+    u32  rsv3[2];
     u32  dbg_dll;
     u32  dbg_dlh;
     u32  rsv4[2];
@@ -51,8 +52,11 @@ typedef struct {
     u32  addr_match485;
     u32  bus_ilde_check;
     u32  tx_dly;
-}allwinner_h6_uart_t;
+} __attribute__((packed)) allwinner_h6_uart_t;
 
+check_member_typedef(allwinner_h6_uart_t,  mcr,  0x10);
+check_member_typedef(allwinner_h6_uart_t,  rfl,  0x84);
+check_member_typedef(allwinner_h6_uart_t,  tx_dly,  0xcc);
 
 typedef  struct {
     ulong  clk_rate;
@@ -173,17 +177,11 @@ static int _allwinner_h6_serial_putc(allwinner_h6_uart_t * const uart_reg, const
 static int _allwinner_h6_serial_pending(allwinner_h6_uart_t *  const uart_reg, const bool input)
 {
 	uint32_t  pending =  0;
-	uint32_t  lsr = readl(&uart_reg->lsr);
-	uint32_t  fcr = readl(&uart_reg->fcr);
-
-	if (fcr & ALLWINNER_UART_FCR_FIFOE) {
-		uint32_t  fifo_level  =  input? readl(&uart_reg->rfl): 
-										readl(&uart_reg->tfl);
-		pending = fifo_level & 0xff ? 1:  0;
-	} else if (input) {
+	uint32_t  lsr = readl(&uart_reg->lsr); 
+	if (input) {
 		pending = lsr & ALLWINNER_UART_LSR_DR ? 1 : 0;	
 	} else {
-		pending = lsr & ALLWINNER_UART_LSR_TEMT ? 0 : 1;			
+		pending = lsr & ALLWINNER_UART_LSR_THRE ? 0 : 1;	
 	}
 
 	return  pending;
@@ -294,6 +292,7 @@ static int  allwinner_h6_serial_probe(struct udevice *dev)
 		return -ENODEV;		
 	}
 
+	_DBG_PRINTF("addr_base -- %#lx\n", addr_base);
 	plat->base = (uint32_t)addr_base;
 
 	_DBG_PRINTF("start enable serial clk\n");

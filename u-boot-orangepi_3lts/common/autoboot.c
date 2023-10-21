@@ -378,6 +378,7 @@ static int abortboot_single_key(int bootdelay)
 	 * Check if key already pressed
 	 */
 	if (tstc()) {	/* we got a key press	*/
+		_DBG_PRINTF("get key, abort autoboot\n");
 		getchar();	/* consume input	*/
 		puts("\b\b\b 0");
 		abort = 1;	/* don't auto boot	*/
@@ -406,13 +407,14 @@ static int abortboot_single_key(int bootdelay)
 
 	putc('\n');
 
+	_DBG_PRINTF("abortboot_single_key:\tabort -- %d\n",  abort);
 	return abort;
 }
 
 static int abortboot(int bootdelay)
 {
 	int abort = 0;
-
+	_DBG_PRINTF("abortboot:\tbootdelay -- %#x\n", bootdelay);
 	if (bootdelay >= 0) {
 		if (autoboot_keyed())
 			abort = abortboot_key_sequence(bootdelay);
@@ -423,6 +425,7 @@ static int abortboot(int bootdelay)
 	if (IS_ENABLED(CONFIG_SILENT_CONSOLE) && abort)
 		gd->flags &= ~GD_FLG_SILENT;
 
+	_DBG_PRINTF("abortboot -- %d\n", abort);
 	return abort;
 }
 

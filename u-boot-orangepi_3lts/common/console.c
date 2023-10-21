@@ -529,6 +529,8 @@ int fgetc(int file)
 		}
 	}
 
+	_DBG_PRINTF("console fgetc failed\n");
+
 	return -1;
 }
 
@@ -597,12 +599,10 @@ int getchar(void)
 
 	if (gd->flags & GD_FLG_DEVINIT) {
 		/* Get from the standard input */
-		_DBG_PRINTF("start fgetc\n");
 		return fgetc(stdin);
 	}
 
 	/* Send directly to the handler */
-	_DBG_PRINTF("start serial_getc\n");
 	return serial_getc();
 }
 
