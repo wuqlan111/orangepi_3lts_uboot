@@ -36,7 +36,6 @@ typedef struct {
     fdt_addr_t  config_base;
     fdt_addr_t  interrupt_base;
 	uint32_t   gpio_count;
-    uint32_t   pins;
 } allwinner_h6_gpio_plat_t;
 
 
@@ -55,7 +54,7 @@ static int32_t _allwinner_h6_gpio_direction_input(allwinner_h6_gpio_config_t * c
 {
 
 	uint32_t  offset  =  pin  >> 3;
-	uint32_t  shift   =  (pin % 8) << 2;
+	uint32_t  shift   =  (pin & 0x7) << 2;
 
 	clrsetbits_32(&config_regs->cfgx[offset],  0x7 << shift, 
 									ALLWINNER_H6_GPIO_INPUT << shift);
@@ -68,7 +67,7 @@ static int32_t _allwinner_h6_gpio_direction_output(allwinner_h6_gpio_config_t * 
 				const int32_t val)
 {
 	uint32_t  offset  =  pin  >> 3;
-	uint32_t  shift   =  (pin % 8) << 2;
+	uint32_t  shift   =  (pin & 0x7) << 2;
 
 	clrsetbits_32(&config_regs->cfgx[offset],  0x7 << shift, 
 									ALLWINNER_H6_GPIO_OUTPUT << shift);
@@ -102,7 +101,7 @@ static int32_t _allwinner_h6_gpio_set_value(allwinner_h6_gpio_config_t * const c
 static int32_t _allwinner_h6_gpio_get_function(allwinner_h6_gpio_config_t * const config_regs, const uint32_t  pin)
 {
 	uint32_t  offset  =  pin  >> 3;
-	uint32_t  shift   =  (pin % 8) << 2;
+	uint32_t  shift   =  (pin & 0x7) << 2;
 	uint32_t  pin_func  =  (readl(&config_regs->cfgx[offset]) >> shift) & 0x7;
 
 	if (pin_func ==  ALLWINNER_H6_GPIO_OUTPUT) {
@@ -208,6 +207,21 @@ static const struct dm_gpio_ops allwinner_h6_gpio_ops = {
 
 static int32_t allwinner_h6_gpio_probe(struct udevice *dev)
 {
+	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
+	struct gpio_dev_priv * uc_priv  =  dev_get_uclass_priv(dev);
+	if (!uc_priv) {
+		dev_err(dev, "get gpio uc priv failed!\n");
+		_DBG_PRINTF("uc_priv is null!\n");
+		return  -1;
+	}
+
+	char * bank_name  =  dev_read_string(dev, "gpio-bank-name");
+	if (!uc_priv->name) {
+		uc_priv->bank_name  =  strdup(bank_name);		
+	}
+
+	uc_priv->gpio_count  =  plat->gpio_count;
+	_DBG_PRINTF("gpio:\tbank -- %s,\tpins -- %u\n", uc_priv->bank_name, uc_priv->gpio_count);
 
 	return 0;
 }
@@ -221,13 +235,13 @@ static int32_t allwinner_h6_gpio_of_to_plat(struct udevice *dev)
 
 	plat->config_base  =  dev_read_addr_index(dev,  0);
 	plat->interrupt_base  =  dev_read_addr_index(dev,  1);
-	ret = dev_read_s32(dev, "allwinner,gpio-bank-width",  &plat->gpio_count);
-	// plat->bank_name = fdt_getprop(gd->fdt_blob, dev_of_offset(dev),
-	// 	"gpio-bank-name", NULL);
+	ret = dev_read_u32(dev, "ngpios",  &plat->gpio_count);
+	if (ret) {
+		dev_err(dev, "get npios prop failed!\n");
+	}
 
 	return  ret;
 }
-
 
 
 static const struct udevice_id allwinner_h6_gpio_ids[] = {

@@ -105,6 +105,8 @@ static int do_gpio_status(bool all, const char *gpio_name)
 		}
 		banklen = bank_name ? strlen(bank_name) : 0;
 
+		_DBG_PRINTF("bank_name -- %s,\tpins -- %u\n", bank_name? bank_name: "null", num_bits);
+
 		if (!gpio_name || !bank_name ||
 		    !strncasecmp(gpio_name, bank_name, banklen)) {
 			const char *p;

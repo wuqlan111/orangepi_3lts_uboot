@@ -96,7 +96,7 @@ static int32_t allwinner_h6_pinctrl_probe(struct udevice *dev)
 
 
 static const struct udevice_id allwinner_h6_pinctrl_match[] = {
-	{ .compatible = "allwinner,h6-v200-pinctrl" },
+	{ .compatible = "allwinner,H6-v200-pinctrl" },
 	{ /* sentinel */ }
 };
 
