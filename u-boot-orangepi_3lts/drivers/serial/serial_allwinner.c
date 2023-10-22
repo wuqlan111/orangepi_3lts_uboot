@@ -86,6 +86,16 @@ static int32_t  _ccu_get_uart_apb2_clk(ulong * clk)
 
 }
 
+static void _allwinner_serial_set_or_clean_dlab(allwinner_h6_uart_t * const uart_reg, const uint32_t set)
+{
+	while(readl(&uart_reg->usr) & ALLWINNER_UART_SR_BUSY) ;
+
+	if (set) {
+		setbits_32(&uart_reg->lcr,  ALLWINNER_UART_LCR_DLAB);
+	} else {
+		clrbits_32(&uart_reg->lcr,  ALLWINNER_UART_LCR_DLAB);
+	}
+}
 
 
 static int _allwinner_h6_serial_setbrg(allwinner_h6_uart_t * const uart_reg, 
@@ -112,16 +122,20 @@ static int _allwinner_h6_serial_setbrg(allwinner_h6_uart_t * const uart_reg,
 		return  -EINVAL;
 	}
 
-	setbits_32(&uart_reg->lcr,  ALLWINNER_UART_LCR_DLAB);
+	_allwinner_serial_set_or_clean_dlab(uart_reg,  1);
+
 	writel(integer_part & 0xff,  &uart_reg->dll);
 	writel(integer_part >> 8,   &uart_reg->dlh);
 
-	clrbits_32(&uart_reg->lcr,  ALLWINNER_UART_LCR_DLAB);
+	_allwinner_serial_set_or_clean_dlab(uart_reg,  0);
 
 	return 0;
 
 }
 
+#define  UARTX_FIFO_INIT_FLAG    (ALLWINNER_UART_FCR_FIFOE | ALLWINNER_UART_FCR_RFIFOR \
+									| ALLWINNER_UART_FCR_XFIFOR)
+#define  UARTX_MCR_INIT_FLAG     (ALLWINNER_UART_MCR_DTR | ALLWINNER_UART_MCR_RTS)
 
 static  int  _allwinner_h6_serial_init(allwinner_h6_uart_t * const uart_reg,
 			const ulong usart_clk_rate, const int baudrate)
@@ -133,10 +147,12 @@ static  int  _allwinner_h6_serial_init(allwinner_h6_uart_t * const uart_reg,
 		;
 	}
 
+	_allwinner_serial_set_or_clean_dlab(uart_reg,  0);
+
 	writel(0, &uart_reg->ier);
-	writel(0, &uart_reg->fcr);
+	writel(UARTX_FIFO_INIT_FLAG, &uart_reg->fcr);
 	writel(0x3,  &uart_reg->lcr);
-	writel(0,  &uart_reg->mcr);
+	writel(UARTX_MCR_INIT_FLAG,  &uart_reg->mcr);
 
 	ret = _allwinner_h6_serial_setbrg(uart_reg, usart_clk_rate, baudrate);
 
@@ -152,9 +168,7 @@ static int _allwinner_h6_serial_getc(allwinner_h6_uart_t * const uart_reg)
 		return  -EAGAIN;
 	}
 
-	clrbits_32(&uart_reg->lcr,  ALLWINNER_UART_LCR_DLAB);
-
-	return readl(&uart_reg->rbr);
+	return  readl(&uart_reg->rbr);
 }
 
 

@@ -42,7 +42,6 @@ typedef  struct {
 #define  ALLWINNER_UART_MCR_LOOP                      BIT(4)
 #define  ALLWINNER_UART_MCR_RTS                       BIT(1)
 #define  ALLWINNER_UART_MCR_DTR                       BIT(0)
-#define  ALLWINNER_UART_MCR_USART_FUNCTION            GENMASK(7, 6)
 
 
 #define  ALLWINNER_UART_LSR_FIFOERR                      BIT(7)
