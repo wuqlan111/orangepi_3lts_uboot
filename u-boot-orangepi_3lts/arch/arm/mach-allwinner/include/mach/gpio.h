@@ -45,21 +45,21 @@ enum {
 };
 
 typedef enum {
-	ALLWINNER_H6_GPIO_AF0 = 0,
-	ALLWINNER_H6_GPIO_AF1,
-	ALLWINNER_H6_GPIO_AF2,
-	ALLWINNER_H6_GPIO_AF3,
-	ALLWINNER_H6_GPIO_AF4,
-	ALLWINNER_H6_GPIO_AF5,
-	ALLWINNER_H6_GPIO_AF6,
-	ALLWINNER_H6_GPIO_AF7,
-	ALLWINNER_H6_GPIO_MAX_AF  =  ALLWINNER_H6_GPIO_AF7
-} allwinner_h6_gpio_af_e;
+	ALLWINNER_H6_PINMUX_AF0 = 0,
+	ALLWINNER_H6_PINMUX_AF1,
+	ALLWINNER_H6_PINMUX_AF2,
+	ALLWINNER_H6_PINMUX_AF3,
+	ALLWINNER_H6_PINMUX_AF4,
+	ALLWINNER_H6_PINMUX_AF5,
+	ALLWINNER_H6_PINMUX_AF6,
+	ALLWINNER_H6_PINMUX_AF7,
+	ALLWINNER_H6_PINMUX_MAX_AF  =  ALLWINNER_H6_PINMUX_AF7
+} allwinner_h6_pinmux_af_e;
 
 
-#define  ALLWINNER_H6_GPIO_INPUT       ALLWINNER_H6_GPIO_AF0
-#define  ALLWINNER_H6_GPIO_OUTPUT      ALLWINNER_H6_GPIO_AF1
-#define  ALLWINNER_H6_GPIO_DISABLE     ALLWINNER_H6_GPIO_AF7
+#define  ALLWINNER_H6_PINMUX_INPUT       ALLWINNER_H6_PINMUX_AF0
+#define  ALLWINNER_H6_PINMUX_OUTPUT      ALLWINNER_H6_PINMUX_AF1
+#define  ALLWINNER_H6_PINMUX_DISABLE     ALLWINNER_H6_PINMUX_AF7
 
 
 int32_t  set_gpio_pin_func(const uint32_t bank, const uint32_t pin, const uint32_t func);
@@ -68,6 +68,7 @@ int32_t  set_gpio_pin_drive(const uint32_t bank, const uint32_t pin, const uint3
 int32_t  get_gpio_pin_value(const uint32_t bank, const uint32_t pin, uint32_t * const value);
 int32_t  allwinner_gpio_output_value(const uint32_t bank, const uint32_t pin, 
                                     const uint32_t pull_type,  const uint32_t value );
+char  *  pinmux_func_2_str(const uint32_t func);
 
 typedef struct {
     uint32_t  bank:4;

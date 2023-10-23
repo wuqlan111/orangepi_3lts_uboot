@@ -113,7 +113,7 @@ int32_t allwinner_gpio_output_value(const uint32_t bank, const uint32_t pin,
                                     const uint32_t pull_type,  const uint32_t value )
 
 {
-    if (set_gpio_pin_func(bank, pin,  ALLWINNER_H6_GPIO_OUTPUT)) {
+    if (set_gpio_pin_func(bank, pin,  ALLWINNER_H6_PINMUX_OUTPUT)) {
         return  -1;
     }
 
@@ -124,8 +124,24 @@ int32_t allwinner_gpio_output_value(const uint32_t bank, const uint32_t pin,
 
 }
 
+#define  TYPE_CASE(x)    case (x):  return #x;
 
+char  *  pinmux_func_2_str(const uint32_t func)
+{
+    switch (func) {
+        TYPE_CASE(ALLWINNER_H6_PINMUX_INPUT)
+        TYPE_CASE(ALLWINNER_H6_PINMUX_OUTPUT)
+        TYPE_CASE(ALLWINNER_H6_PINMUX_AF2)
+        TYPE_CASE(ALLWINNER_H6_PINMUX_AF3)
+        TYPE_CASE(ALLWINNER_H6_PINMUX_AF4)
+        TYPE_CASE(ALLWINNER_H6_PINMUX_AF5)
+        TYPE_CASE(ALLWINNER_H6_PINMUX_AF6)
+        TYPE_CASE(ALLWINNER_H6_PINMUX_DISABLE)
+    }
 
+    return "invalid_pinmux_func";
+
+}
 
 
 

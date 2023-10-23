@@ -143,6 +143,7 @@
 		pinctrlc: pinctrl@0300b048 {
 			compatible = "allwinner,H6-v200-pinctrl";
 			reg = <0x0300b048 0x24>;
+			base-name = "PC";
 			ngpios = <ALLWINNER_H6_GPIOC_NUMBER>;
 		};
 
@@ -158,6 +159,7 @@
 		pinctrld: pinctrl@0300b06c {
 			compatible = "allwinner,H6-v200-pinctrl";
 			reg = <0x0300b06c 0x24>;
+			base-name = "PD";
 			ngpios = <ALLWINNER_H6_GPIOD_NUMBER>;
 		};
 
@@ -175,6 +177,7 @@
 		pinctrlf: pinctrl@0300b0b4 {
 			compatible = "allwinner,H6-v200-pinctrl";
 			reg = <0x0300b0b4 0x24>;
+			base-name = "PF";
 			ngpios = <ALLWINNER_H6_GPIOF_NUMBER>;
 		};
 
@@ -192,6 +195,7 @@
 		pinctrlg: pinctrl@0300b0d8 {
 			compatible = "allwinner,H6-v200-pinctrl";
 			reg = <0x0300b0d8 0x24>;
+			base-name = "PG";
 			ngpios = <ALLWINNER_H6_GPIOG_NUMBER>;
 		};
 
@@ -209,6 +213,7 @@
 		pinctrlh: pinctrl@0300b0fc {
 			compatible = "allwinner,H6-v200-pinctrl";
 			reg = <0x0300b0fc 0x24>;
+			base-name = "PH";
 			ngpios = <ALLWINNER_H6_GPIOH_NUMBER>;
 		};
 
@@ -226,6 +231,7 @@
 		pinctrll: pinctrl@07022000 {
 			compatible = "allwinner,H6-v200-pinctrl";
 			reg = <0x07022000 0x24>;
+			base-name = "PL";
 			ngpios = <ALLWINNER_H6_GPIOL_NUMBER>;
 		};
 
@@ -243,6 +249,7 @@
 		pinctrlm: pinctrl@07022024 {
 			compatible = "allwinner,H6-v200-pinctrl";
 			reg = <0x07022024 0x24>;
+			base-name = "PM";
 			ngpios = <ALLWINNER_H6_GPIOM_NUMBER>;
 		};
 

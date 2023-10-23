@@ -57,7 +57,7 @@ static int32_t _allwinner_h6_gpio_direction_input(allwinner_h6_gpio_config_t * c
 	uint32_t  shift   =  (pin & 0x7) << 2;
 
 	clrsetbits_32(&config_regs->cfgx[offset],  0x7 << shift, 
-									ALLWINNER_H6_GPIO_INPUT << shift);
+									ALLWINNER_H6_PINMUX_INPUT << shift);
 
 	return  0;
 }
@@ -70,7 +70,7 @@ static int32_t _allwinner_h6_gpio_direction_output(allwinner_h6_gpio_config_t * 
 	uint32_t  shift   =  (pin & 0x7) << 2;
 
 	clrsetbits_32(&config_regs->cfgx[offset],  0x7 << shift, 
-									ALLWINNER_H6_GPIO_OUTPUT << shift);
+									ALLWINNER_H6_PINMUX_OUTPUT << shift);
 	if (val) {
 		setbits_32(&config_regs->dat,  1 << pin);
 	} else {
@@ -104,11 +104,11 @@ static int32_t _allwinner_h6_gpio_get_function(allwinner_h6_gpio_config_t * cons
 	uint32_t  shift   =  (pin & 0x7) << 2;
 	uint32_t  pin_func  =  (readl(&config_regs->cfgx[offset]) >> shift) & 0x7;
 
-	if (pin_func ==  ALLWINNER_H6_GPIO_OUTPUT) {
+	if (pin_func ==  ALLWINNER_H6_PINMUX_OUTPUT) {
 		return  GPIOF_OUTPUT;
-	} else if (pin_func ==  ALLWINNER_H6_GPIO_INPUT ) {
+	} else if (pin_func ==  ALLWINNER_H6_PINMUX_INPUT ) {
 		return  GPIOF_INPUT;
-	} else if (pin_func == ALLWINNER_H6_GPIO_OUTPUT) {
+	} else if (pin_func == ALLWINNER_H6_PINMUX_DISABLE) {
 		return  GPIOF_UNUSED;
 	}
 
