@@ -113,6 +113,11 @@ config WDT_ASPEED
 	  It currently does not support Boot Flash Addressing Mode Detection or
 	  Second Boot.
 
+config WDT_ALLWINNER
+	bool "Allwinner watchdog timer support"
+	depends on WDT
+	default y if ARCH_ALLWINNER
+
 config WDT_AST2600
 	bool "Aspeed AST2600 watchdog timer support"
 	depends on WDT

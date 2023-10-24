@@ -311,7 +311,7 @@
 		};
 
 		watchdog: watchdog@20300 {
-			compatible = "allwinner, H6-v200-watchdog";
+			compatible = "allwinner,H6-v200-wdt";
 			reg = <0x030090a0  0x14>;
 			interrupts = <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>;
 			clocks  =	<&dxcoclk>;
