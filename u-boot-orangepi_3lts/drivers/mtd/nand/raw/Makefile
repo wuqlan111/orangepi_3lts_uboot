@@ -78,6 +78,7 @@ obj-$(CONFIG_NAND_STM32_FMC2) += stm32_fmc2_nand.o
 obj-$(CONFIG_CORTINA_NAND) += cortina_nand.o
 obj-$(CONFIG_ROCKCHIP_NAND) += rockchip_nfc.o
 obj-$(CONFIG_NAND_MT7621) += mt7621_nand.o
+obj-$(CONFIG_NAND_ALLWINNER) +=  allwinner_h6_nand.o
 
 else  # minimal SPL drivers
 
@@ -87,5 +88,6 @@ obj-$(CONFIG_NAND_MXC) += mxc_nand_spl.o
 obj-$(CONFIG_NAND_MXS) += mxs_nand_spl.o mxs_nand.o
 obj-$(CONFIG_NAND_SUNXI) += sunxi_nand_spl.o
 obj-$(CONFIG_NAND_MT7621) += mt7621_nand_spl.o mt7621_nand.o
+obj-$(CONFIG_NAND_ALLWINNER) +=  allwinner_h6_nand_spl.o
 
 endif # drivers

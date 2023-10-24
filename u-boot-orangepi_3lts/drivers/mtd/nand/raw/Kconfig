@@ -471,6 +471,16 @@ config NAND_SUNXI_SPL_USABLE_PAGE_SIZE
 
 endif
 
+config NAND_ALLWINNER
+	bool "Support for NAND on Allwinner SoCs"
+	depends on ARCH_ALLWINNER
+	default y
+	select SYS_NAND_SELF_INIT
+	select SPL_NAND_SUPPORT
+	select SPL_SYS_NAND_SELF_INIT
+	imply CMD_NAND
+
+
 config NAND_ARASAN
 	bool "Configure Arasan Nand"
 	select SYS_NAND_SELF_INIT
