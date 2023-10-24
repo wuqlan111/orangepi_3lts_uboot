@@ -295,18 +295,18 @@
 		};
 
 		timer0:  timer@0x03009014{
-			compatible = "allwinner, H6-v200-timer";
+			compatible = "allwinner,H6-v200-timer32";
 			reg = <0x03009014 0xc>;
-			interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>;
-			clocks =	<&externclk>,  <&dxcoclk>;
+			interrupts  =  <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>;
+			timer-rate  =  <24000000>;
 			status = "disabled";
 		};
 
 		timer1:  timer@0x03009020{
-			compatible = "allwinner, H6-v200-timer";
+			compatible = "allwinner,H6-v200-timer32";
 			reg = <0x03009020 0xc>;
 			interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
-			clocks  =  <&externclk>,  <&dxcoclk>;
+			timer-rate =  <24000000>;
 			status  =  "disabled";
 		};
 
@@ -319,10 +319,9 @@
 		};
 
 		counter64: counter@20300 {
-			compatible = "allwinner, H6-v200-counter";
+			compatible = "allwinner,H6-v200-counter64";
 			reg = <0x03009100  0xc>;
 			status  =   "disabled";
-			// clocks = <&coreclk 2>, <&refclk>;
 		};
 
 

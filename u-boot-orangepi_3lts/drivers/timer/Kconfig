@@ -91,6 +91,11 @@ config AST_TIMER
 	  This is mostly because they all share several registers which
 	  makes it difficult to completely separate them.
 
+config ALLWINNER_TIMER
+	bool "ALLWINNER timer support"
+	depends on TIMER
+	default y if ARCH_ALLWINNER
+
 config ATCPIT100_TIMER
 	bool "ATCPIT100 timer support"
 	depends on TIMER
