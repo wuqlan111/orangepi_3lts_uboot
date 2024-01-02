@@ -10,6 +10,7 @@
 #include "allwinner-h6-pinctrl.h"
 
 / {
+	interrupt-parent = <&gic>;
 	#address-cells = <1>;
 	#size-cells = <1>;
 
@@ -131,128 +132,106 @@
 			reg = <0   0x200000>;
 		};
 
-		gpioc: gpio@0300b048 {
-			compatible = "allwinner,H6-v200-gpio";
-			reg = <0x0300b048 0x24>;
-			ngpios = <ALLWINNER_H6_GPIOC_NUMBER>;
-			gpio-controller;
-			gpio-bank-name = "gpioc";
-			#gpio-cells = <2>;
-		};
 
-		pinctrlc: pinctrl@0300b048 {
+		pinctrl: pinctrl@0300b000 {
 			compatible = "allwinner,H6-v200-pinctrl";
-			reg = <0x0300b048 0x24>;
-			base-name = "PC";
-			ngpios = <ALLWINNER_H6_GPIOC_NUMBER>;
-		};
-
-		gpiod: gpio@0300b06c {
-			compatible = "allwinner,H6-v200-gpio";
-			reg = <0x0300b06c 0x24>;
-			ngpios = <ALLWINNER_H6_GPIOD_NUMBER>;
-			gpio-controller;
-			gpio-bank-name = "gpiod";
-			#gpio-cells = <2>;
-		};
-
-		pinctrld: pinctrl@0300b06c {
-			compatible = "allwinner,H6-v200-pinctrl";
-			reg = <0x0300b06c 0x24>;
-			base-name = "PD";
-			ngpios = <ALLWINNER_H6_GPIOD_NUMBER>;
-		};
-
-		gpiof: gpio@0300b0b4 {
-			compatible = "allwinner,H6-v200-gpio";
-			reg = <0x0300b0b4   0x24>,  <0x0300b2a0   0x1c>;
-			ngpios = <ALLWINNER_H6_GPIOF_NUMBER>;
-			gpio-controller;
-			gpio-bank-name = "gpiof";
-			#gpio-cells = <2>;
+			reg = <0x0300b000 0x400>;
+			#interrupt-cells = <1>;
 			interrupt-controller;
-			#interrupt-cells = <2>;
+
+			gpioc: gpio@0300b048 {
+				compatible = "allwinner,H6-v200-gpio";
+				reg = <0x0300b048 0x24>;
+				ngpios = <ALLWINNER_H6_GPIOC_NUMBER>;
+				gpio-controller;
+				gpio-bank-name = "gpioc";
+				pins = "PC1";
+				#gpio-cells = <2>;
+				status = "disabled";
+			};
+
+			gpiod: gpio@0300b06c {
+				compatible = "allwinner,H6-v200-gpio";
+				reg = <0x0300b06c 0x24>;
+				ngpios = <ALLWINNER_H6_GPIOD_NUMBER>;
+				gpio-controller;
+				gpio-bank-name = "gpiod";				
+				pins = "PD0";
+				#gpio-cells = <2>;
+				status = "disabled";
+			};
+
+			gpiof: gpio@0300b0b4 {
+				compatible = "allwinner,H6-v200-gpio";
+				reg = <0x0300b0b4   0x24>,  <0x0300b2a0   0x1c>;
+				ngpios = <ALLWINNER_H6_GPIOF_NUMBER>;
+				gpio-controller;
+				gpio-bank-name = "gpiof";
+				pins = "PF1";
+				#gpio-cells = <2>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+				status = "disabled";
+			};			
+
+			gpiog: gpio@0300b0d8 {
+				compatible = "allwinner,H6-v200-gpio";
+				reg = <0x0300b0d8 0x24>,  <0x0300b2c0   0x1c>;
+				ngpios = <ALLWINNER_H6_GPIOG_NUMBER>;
+				gpio-controller;
+				gpio-bank-name = "gpiog";
+				#gpio-cells = <2>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+				status = "disabled";
+			};
+
+			gpioh: gpio@0300b0fc {
+				compatible = "allwinner,H6-v200-gpio";
+				reg = <0x0300b0fc 0x24>,  <0x0300b2e0   0x1c>;
+				ngpios = <ALLWINNER_H6_GPIOH_NUMBER>;
+				gpio-controller;
+				gpio-bank-name = "gpioh";
+				#gpio-cells = <2>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+				status = "disabled";
+			};
 		};
 
-		pinctrlf: pinctrl@0300b0b4 {
+
+		pinctrl_r: pinctrl@07022000 {
 			compatible = "allwinner,H6-v200-pinctrl";
-			reg = <0x0300b0b4 0x24>;
-			base-name = "PF";
-			ngpios = <ALLWINNER_H6_GPIOF_NUMBER>;
-		};
-
-		gpiog: gpio@0300b0d8 {
-			compatible = "allwinner,H6-v200-gpio";
-			reg = <0x0300b0d8 0x24>,  <0x0300b2c0   0x1c>;
-			ngpios = <ALLWINNER_H6_GPIOG_NUMBER>;
-			gpio-controller;
-			gpio-bank-name = "gpiog";
-			#gpio-cells = <2>;
+			reg = <0x0300b06c 0x400>;
+			#interrupt-cells = <1>;
 			interrupt-controller;
-			#interrupt-cells = <2>;
+
+			gpiol: gpio@07022000 {
+				compatible = "allwinner,H6-v200-gpio";
+				reg = <0x07022000 0x24>,  <0x07022200   0x1c>;
+				ngpios = <ALLWINNER_H6_GPIOL_NUMBER>;
+				gpio-controller;
+				gpio-bank-name = "gpiol";
+				#gpio-cells = <2>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+				status = "disabled";
+			};
+
+			gpiom: gpio@07022024 {
+				compatible = "allwinner,H6-v200-gpio";
+				reg = <0x07022024 0x24>,  <0x07022220   0x1c>;
+				ngpios = <ALLWINNER_H6_GPIOM_NUMBER>;
+				gpio-controller;
+				gpio-bank-name = "gpiom";
+				#gpio-cells = <2>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+				status = "disabled";
+			};
 		};
 
-		pinctrlg: pinctrl@0300b0d8 {
-			compatible = "allwinner,H6-v200-pinctrl";
-			reg = <0x0300b0d8 0x24>;
-			base-name = "PG";
-			ngpios = <ALLWINNER_H6_GPIOG_NUMBER>;
-		};
-
-		gpioh: gpio@0300b0fc {
-			compatible = "allwinner,H6-v200-gpio";
-			reg = <0x0300b0fc 0x24>,  <0x0300b2e0   0x1c>;
-			ngpios = <ALLWINNER_H6_GPIOH_NUMBER>;
-			gpio-controller;
-			gpio-bank-name = "gpioh";
-			#gpio-cells = <2>;
-			interrupt-controller;
-			#interrupt-cells = <2>;
-		};
-
-		pinctrlh: pinctrl@0300b0fc {
-			compatible = "allwinner,H6-v200-pinctrl";
-			reg = <0x0300b0fc 0x24>;
-			base-name = "PH";
-			ngpios = <ALLWINNER_H6_GPIOH_NUMBER>;
-		};
-
-		gpiol: gpio@07022000 {
-			compatible = "allwinner,H6-v200-gpio";
-			reg = <0x07022000 0x24>,  <0x07022200   0x1c>;
-			ngpios = <ALLWINNER_H6_GPIOL_NUMBER>;
-			gpio-controller;
-			gpio-bank-name = "gpiol";
-			#gpio-cells = <2>;
-			interrupt-controller;
-			#interrupt-cells = <2>;
-		};
-
-		pinctrll: pinctrl@07022000 {
-			compatible = "allwinner,H6-v200-pinctrl";
-			reg = <0x07022000 0x24>;
-			base-name = "PL";
-			ngpios = <ALLWINNER_H6_GPIOL_NUMBER>;
-		};
-
-		gpiom: gpio@07022024 {
-			compatible = "allwinner,H6-v200-gpio";
-			reg = <0x07022024 0x24>,  <0x07022220   0x1c>;
-			ngpios = <ALLWINNER_H6_GPIOM_NUMBER>;
-			gpio-controller;
-			gpio-bank-name = "gpiom";
-			#gpio-cells = <2>;
-			interrupt-controller;
-			#interrupt-cells = <2>;
-		};
-
-		pinctrlm: pinctrl@07022024 {
-			compatible = "allwinner,H6-v200-pinctrl";
-			reg = <0x07022024 0x24>;
-			base-name = "PM";
-			ngpios = <ALLWINNER_H6_GPIOM_NUMBER>;
-		};
-
+		
 		coreclk: ccu@03001000 {
 			#clock-cells = <1>;
 			compatible = "allwinner,h6-v200-ccu", "allwinner,h6-ccu";
