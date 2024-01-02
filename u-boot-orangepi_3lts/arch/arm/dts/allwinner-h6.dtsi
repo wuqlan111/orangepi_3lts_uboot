@@ -148,6 +148,7 @@
 				pins = "PC1";
 				#gpio-cells = <2>;
 				status = "disabled";
+				gpio-ranges = <&pinctrl 0 1 0>;
 			};
 
 			gpiod: gpio@0300b06c {
@@ -155,10 +156,10 @@
 				reg = <0x0300b06c 0x24>;
 				ngpios = <ALLWINNER_H6_GPIOD_NUMBER>;
 				gpio-controller;
-				gpio-bank-name = "gpiod";				
-				pins = "PD0";
+				gpio-bank-name = "gpiod"; 
 				#gpio-cells = <2>;
 				status = "disabled";
+				gpio-ranges = <&pinctrl 0 1 0>;
 			};
 
 			gpiof: gpio@0300b0b4 {
@@ -172,6 +173,7 @@
 				interrupt-controller;
 				#interrupt-cells = <2>;
 				status = "disabled";
+				gpio-ranges = <&pinctrl 0 1 0>;
 			};			
 
 			gpiog: gpio@0300b0d8 {
@@ -196,6 +198,7 @@
 				interrupt-controller;
 				#interrupt-cells = <2>;
 				status = "disabled";
+				gpio-ranges = <&pinctrl 0 1 0>;
 			};
 		};
 
@@ -216,6 +219,7 @@
 				interrupt-controller;
 				#interrupt-cells = <2>;
 				status = "disabled";
+				gpio-ranges = <&pinctrl 0 1 0>;
 			};
 
 			gpiom: gpio@07022024 {
@@ -228,6 +232,7 @@
 				interrupt-controller;
 				#interrupt-cells = <2>;
 				status = "disabled";
+				gpio-ranges = <&pinctrl 0 1 0>;
 			};
 		};
 
