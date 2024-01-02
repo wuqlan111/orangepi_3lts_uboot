@@ -144,7 +144,30 @@ char  *  pinmux_func_2_str(const uint32_t func)
 }
 
 
+int32_t  check_pinctrl_name_vld(const char * name, uint32_t * const bank, uint32_t * const pin)
+{
+	if (name[0] != 'P' || (name[1] < 'A')  || (name[1] > 'M')) {
+		return -EINVAL;
+	}
 
+	uint32_t tmp_bank = GPIOA + name[1] - 'A';
+    ulong  tmp_pin = simple_strtoul(&name[2], NULL, 10);
+
+    if (tmp_pin > 31) {
+        return -EINVAL;
+    }
+
+    if (bank) {
+        *bank = tmp_bank;
+    }
+
+    if (pin) {
+        *pin = tmp_pin;
+    }
+
+    return  0;
+
+}
 
 
 

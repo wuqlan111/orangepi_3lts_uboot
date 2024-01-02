@@ -141,47 +141,38 @@
 
 			gpioc: gpio@0300b048 {
 				compatible = "allwinner,H6-v200-gpio";
-				reg = <0x0300b048 0x24>;
-				ngpios = <ALLWINNER_H6_GPIOC_NUMBER>;
 				gpio-controller;
 				gpio-bank-name = "gpioc";
-				pins = "PC1";
+				gpio-pins = "PC1";
 				#gpio-cells = <2>;
 				status = "disabled";
-				gpio-ranges = <&pinctrl 0 1 0>;
 			};
 
 			gpiod: gpio@0300b06c {
 				compatible = "allwinner,H6-v200-gpio";
-				reg = <0x0300b06c 0x24>;
-				ngpios = <ALLWINNER_H6_GPIOD_NUMBER>;
 				gpio-controller;
 				gpio-bank-name = "gpiod"; 
+				gpio-pins = "PD1";
 				#gpio-cells = <2>;
 				status = "disabled";
-				gpio-ranges = <&pinctrl 0 1 0>;
 			};
 
 			gpiof: gpio@0300b0b4 {
 				compatible = "allwinner,H6-v200-gpio";
-				reg = <0x0300b0b4   0x24>,  <0x0300b2a0   0x1c>;
-				ngpios = <ALLWINNER_H6_GPIOF_NUMBER>;
 				gpio-controller;
 				gpio-bank-name = "gpiof";
-				pins = "PF1";
+				gpio-pins = "PF1";
 				#gpio-cells = <2>;
 				interrupt-controller;
 				#interrupt-cells = <2>;
 				status = "disabled";
-				gpio-ranges = <&pinctrl 0 1 0>;
 			};			
 
 			gpiog: gpio@0300b0d8 {
 				compatible = "allwinner,H6-v200-gpio";
-				reg = <0x0300b0d8 0x24>,  <0x0300b2c0   0x1c>;
-				ngpios = <ALLWINNER_H6_GPIOG_NUMBER>;
 				gpio-controller;
 				gpio-bank-name = "gpiog";
+				gpio-pins = "PG1";
 				#gpio-cells = <2>;
 				interrupt-controller;
 				#interrupt-cells = <2>;
@@ -190,15 +181,13 @@
 
 			gpioh: gpio@0300b0fc {
 				compatible = "allwinner,H6-v200-gpio";
-				reg = <0x0300b0fc 0x24>,  <0x0300b2e0   0x1c>;
-				ngpios = <ALLWINNER_H6_GPIOH_NUMBER>;
 				gpio-controller;
 				gpio-bank-name = "gpioh";
+				gpio-pins = "PH1";
 				#gpio-cells = <2>;
 				interrupt-controller;
 				#interrupt-cells = <2>;
 				status = "disabled";
-				gpio-ranges = <&pinctrl 0 1 0>;
 			};
 		};
 
@@ -211,28 +200,24 @@
 
 			gpiol: gpio@07022000 {
 				compatible = "allwinner,H6-v200-gpio";
-				reg = <0x07022000 0x24>,  <0x07022200   0x1c>;
-				ngpios = <ALLWINNER_H6_GPIOL_NUMBER>;
 				gpio-controller;
 				gpio-bank-name = "gpiol";
+				gpio-pins = "PL1";
 				#gpio-cells = <2>;
 				interrupt-controller;
 				#interrupt-cells = <2>;
 				status = "disabled";
-				gpio-ranges = <&pinctrl 0 1 0>;
 			};
 
 			gpiom: gpio@07022024 {
 				compatible = "allwinner,H6-v200-gpio";
-				reg = <0x07022024 0x24>,  <0x07022220   0x1c>;
-				ngpios = <ALLWINNER_H6_GPIOM_NUMBER>;
 				gpio-controller;
 				gpio-bank-name = "gpiom";
+				gpio-pins = "PM1";
 				#gpio-cells = <2>;
 				interrupt-controller;
 				#interrupt-cells = <2>;
 				status = "disabled";
-				gpio-ranges = <&pinctrl 0 1 0>;
 			};
 		};
 

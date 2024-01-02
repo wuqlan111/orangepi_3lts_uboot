@@ -69,6 +69,7 @@ int32_t  get_gpio_pin_value(const uint32_t bank, const uint32_t pin, uint32_t * 
 int32_t  allwinner_gpio_output_value(const uint32_t bank, const uint32_t pin, 
                                     const uint32_t pull_type,  const uint32_t value );
 char  *  pinmux_func_2_str(const uint32_t func);
+int32_t  check_pinctrl_name_vld(const char * name, uint32_t * const bank, uint32_t * const pin);
 
 typedef struct {
     uint32_t  bank:4;

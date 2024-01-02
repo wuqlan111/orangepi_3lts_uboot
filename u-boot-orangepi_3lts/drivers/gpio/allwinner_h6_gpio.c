@@ -7,6 +7,7 @@
 #include <dm.h>
 #include <dm/device_compat.h>
 #include <dm/device.h>
+#include <dm/pinctrl.h>
 #include <malloc.h>
 #include <asm/io.h>
 #include <linux/sizes.h>
@@ -35,7 +36,8 @@ typedef struct {
 typedef struct {
     fdt_addr_t  config_base;
     fdt_addr_t  interrupt_base;
-	uint32_t   gpio_count;
+	uint32_t   gpio_count;	 
+	uint32_t   pinctrl_bank;
 } allwinner_h6_gpio_plat_t;
 
 
@@ -120,22 +122,29 @@ static int32_t _allwinner_h6_gpio_get_function(allwinner_h6_gpio_config_t * cons
 #if CONFIG_IS_ENABLED(DM_GPIO)
 
 
-static int32_t allwinner_h6_gpio_direction_input(struct udevice *dev, uint32_t pin)
+static int32_t allwinner_h6_gpio_direction_input(struct udevice *dev, uint32_t offset)
 {
 	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_gpio_config_t *  config_regs  =  
 									(allwinner_h6_gpio_config_t * )plat->config_base;
 
-	if (pin >= plat->gpio_count) {
+	if (offset >= plat->gpio_count) {
 		dev_err(dev, "pin_id [%u] invalid", pin);
 		return -EINVAL;
 	}
 
-	return  _allwinner_h6_gpio_direction_input(config_regs,  pin);
+	char * cur_pin = NULL;
+	uint32_t  cur_bank, cur_pin_offset;
+	ret = dev_read_string_index(dev, "gpio-pins", offset, &cur_pin);
+	if (ret || check_pinctrl_name_vld(cur_pin, &cur_bank, &cur_pin_offset) ) {
+		return  -EINVAL | ret;
+	}
+	
+	return  _allwinner_h6_gpio_direction_input(config_regs,  cur_pin_offset);
 }
 
 
-static int32_t allwinner_h6_gpio_direction_output(struct udevice *dev, uint32_t pin,
+static int32_t allwinner_h6_gpio_direction_output(struct udevice *dev, uint32_t offset,
 				    int32_t val)
 {
 	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
@@ -147,11 +156,18 @@ static int32_t allwinner_h6_gpio_direction_output(struct udevice *dev, uint32_t 
 		return -EINVAL;
 	}
 
-	return  _allwinner_h6_gpio_direction_output(config_regs,  pin,  val);
+	char * cur_pin = NULL;
+	uint32_t  cur_bank, cur_pin_offset;
+	ret = dev_read_string_index(dev, "gpio-pins", offset, &cur_pin);
+	if (ret || check_pinctrl_name_vld(cur_pin, &cur_bank, &cur_pin_offset) ) {
+		return  -EINVAL | ret;
+	}
+
+	return  _allwinner_h6_gpio_direction_output(config_regs,  cur_pin_offset,  val);
 }
 
 
-static int32_t allwinner_h6_gpio_get_value(struct udevice *dev, uint32_t pin)
+static int32_t allwinner_h6_gpio_get_value(struct udevice *dev, uint32_t offset)
 {
 	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_gpio_config_t *  config_regs  =  
@@ -162,11 +178,18 @@ static int32_t allwinner_h6_gpio_get_value(struct udevice *dev, uint32_t pin)
 		return -EINVAL;
 	}
 
-	return  _allwinner_h6_gpio_get_value(config_regs,  pin);
+	char * cur_pin = NULL;
+	uint32_t  cur_bank, cur_pin_offset;
+	ret = dev_read_string_index(dev, "gpio-pins", offset, &cur_pin);
+	if (ret || check_pinctrl_name_vld(cur_pin, &cur_bank, &cur_pin_offset) ) {
+		return  -EINVAL | ret;
+	}
+
+	return  _allwinner_h6_gpio_get_value(config_regs,  cur_pin_offset);
 }
 
 
-static int32_t allwinner_h6_gpio_set_value(struct udevice *dev, uint32_t pin, int32_t val)
+static int32_t allwinner_h6_gpio_set_value(struct udevice *dev, uint32_t offset, int32_t val)
 {
 	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_gpio_config_t *  config_regs  =  
@@ -177,11 +200,18 @@ static int32_t allwinner_h6_gpio_set_value(struct udevice *dev, uint32_t pin, in
 		return -EINVAL;
 	}
 
-	return  _allwinner_h6_gpio_set_value(config_regs,  pin, val);
+	char * cur_pin = NULL;
+	uint32_t  cur_bank, cur_pin_offset;
+	ret = dev_read_string_index(dev, "gpio-pins", offset, &cur_pin);
+	if (ret || check_pinctrl_name_vld(cur_pin, &cur_bank, &cur_pin_offset) ) {
+		return  -EINVAL | ret;
+	}
+
+	return  _allwinner_h6_gpio_set_value(config_regs,  cur_pin_offset, val);
 }
 
 
-static int32_t allwinner_h6_gpio_get_function(struct udevice *dev, uint32_t  pin)
+static int32_t allwinner_h6_gpio_get_function(struct udevice *dev, uint32_t  offset)
 {
 	allwinner_h6_gpio_plat_t * plat = dev_get_plat(dev);
 	allwinner_h6_gpio_config_t *  config_regs  =  
@@ -192,7 +222,14 @@ static int32_t allwinner_h6_gpio_get_function(struct udevice *dev, uint32_t  pin
 		return -EINVAL;
 	}
 
-	return  _allwinner_h6_gpio_get_function(config_regs,  pin);
+	char * cur_pin = NULL;
+	uint32_t  cur_bank, cur_pin_offset;
+	ret = dev_read_string_index(dev, "gpio-pins", offset, &cur_pin);
+	if (ret || check_pinctrl_name_vld(cur_pin, &cur_bank, &cur_pin_offset) ) {
+		return  -EINVAL | ret;
+	}
+
+	return  _allwinner_h6_gpio_get_function(config_regs,  cur_pin_offset);
 }
 
 
@@ -233,8 +270,31 @@ static int32_t allwinner_h6_gpio_of_to_plat(struct udevice *dev)
 
 	assert(plat != NULL);
 
-	plat->config_base  =  dev_read_addr_index(dev,  0);
-	plat->interrupt_base  =  dev_read_addr_index(dev,  1);
+	ret = dev_read_string_count(dev , "gpio-pins");
+	if (ret < 0) {
+		return  ret;
+	}
+	plat->ngpios = ret;
+
+	char * last_pin = NULL, *cur_pin = NULL;
+	for (int32_t i = 0; i < ret; i++) {
+		uint32_t  cur_bank, cur_pin_offset;
+		ret = dev_read_string_index(dev, "gpio-pins", i, &cur_pin);
+		if (ret || check_pinctrl_name_vld(cur_pin, &cur_bank, &cur_pin_offset) ) {
+			return  -EINVAL | ret;
+		}
+
+		if ((last_pin != NULL) && (last_pin[1] != cur_pin[1])) {
+			_DBG_PRINTF("not in samme bank!\n");
+			return -EINVAL;
+		}
+
+		last_pin = cur_pin;
+		plat->pinctrl_bank = cur_bank;
+	}
+
+	plat->config_base  =  GPIO_BANK_ADDR(plat->pinctrl_bank);
+	// plat->interrupt_base  =  ;
 	ret = dev_read_u32(dev, "ngpios",  &plat->gpio_count);
 	if (ret) {
 		dev_err(dev, "get npios prop failed!\n");
